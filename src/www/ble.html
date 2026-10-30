@@ -1,0 +1,466 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TPMS · Garage</title><link rel="stylesheet" href="/css.css"><body>
+<div id="app" class="lu-shell" data-theme="cream" data-density="nano" data-tooltips="false">
+<header class="shell-topbar"><button id="menuToggle" class="menu-toggle icon-action" aria-label="Меню" aria-controls="navigation" aria-expanded="true"><i class="ti ti-menu-2" aria-hidden="true"></i></button><strong class="shell-brand"><i class="ti ti-bolt" aria-hidden="true"></i> TPMS</strong><span class="shell-version">Garage</span>
+<div class="shell-stats"><span id="clock" class="mono">--:--:--</span><span id="ip" class="ip mono">IP --</span><span id="connection">—</span></div>
+<details class="appearance" id="appearance"><summary><i class="ti ti-palette" aria-hidden="true"></i> <span id="appearanceText">Кремовая · NANO</span></summary><div class="appearance-menu" id="appearanceMenu"></div></details><button id="language">RU</button></header>
+<div class="shell-body"><button id="menuBackdrop" class="menu-backdrop" aria-label="Закрыть меню" tabindex="-1" hidden></button><div id="menuEdge" class="menu-edge" aria-hidden="true"></div><aside class="shell-sidebar"><nav id="navigation" aria-label="Разделы"></nav></aside><main class="shell-content">
+<section id="page-home" class="workspace-page"><header class="page-header"><h1 id="homeVehicleTitle">—</h1><div class="toolbar"><select id="homeActiveVehicle" aria-label="Машина"></select><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></header><div id="homeVehicleCanvas" class="vehicle-canvas home-vehicle-canvas" aria-label="Колёса машины" tabindex="0"></div></section>
+<section id="page-tpms" class="workspace-page" hidden><header class="page-header"><h1 data-i="Давление в шинах"></h1><div class="toolbar"><select id="activeVehicle" aria-label="Машина"></select><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></header>
+<div class="pane-stack"><section class="panel tpms-readings"><header class="panel-header"><h2 id="vehicleTitle">—</h2><span id="btStatus" class="mono"></span><button class="small-button icon-action" data-help="tpms">ⓘ</button></header><div class="table-scroll grow" tabindex="0" aria-label="TPMS"><table><colgroup><col style="width:28%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:12%"></colgroup><thead><tr><th data-i="Колесо"></th><th data-i="Датчик"></th><th class="number">bar</th><th class="number">°C</th><th class="number" data-i="Давность, с"></th><th class="number" data-i="Батарея, %"></th><th class="number" data-i="Тревога"></th></tr></thead><tbody id="wheelRows"></tbody></table></div></section>
+<section class="panel grow pane-stack"><header class="panel-header"><h2 data-i="Приёмник"></h2><span id="receiverCounters" class="mono"></span><button id="receiverInfo" class="small-button icon-action">ⓘ</button></header><div class="table-scroll grow" tabindex="0" aria-label="Задачи"><table><colgroup><col style="width:32%"><col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:20%"><col style="width:14%"></colgroup><thead><tr><th data-i="Задача"></th><th class="number">#</th><th data-i="Состояние"></th><th class="number" data-i="Приоритет"></th><th class="number" data-i="Стек, байт"></th><th class="number">CPU, %</th></tr></thead><tbody id="taskRows"></tbody></table></div></section></div></section>
+<section id="page-tom" class="workspace-page" hidden><header class="page-header"><h1>TomTom · <span data-i="Реклама"></span></h1><div class="toolbar"><span id="tomCount" class="mono">0</span><button data-help="research" class="small-button icon-action">ⓘ</button></div></header><section class="panel grow pane-stack"><div class="table-scroll grow" tabindex="0" aria-label="TomTom"><table class="radio-table"><colgroup><col style="width:160px"><col style="width:95px"><col style="width:70px"><col style="width:75px"><col style="width:75px"><col style="width:100px"><col style="width:100px"><col style="width:120px"></colgroup><thead><tr><th>BLE</th><th data-i="Код"></th><th class="number">dBm</th><th class="number" data-i="Пакеты"></th><th class="number" data-i="Давность, с"></th><th data-i="Разбор"></th><th data-i="Известный"></th><th data-i="Действия"></th></tr></thead><tbody id="tomRows"></tbody></table></div></section></section>
+<section id="page-bt" class="workspace-page" hidden><header class="page-header"><h1 data-i="Все устройства BT"></h1><div class="toolbar"><select id="scanMode" aria-label="Scan mode"><option value="passive">Passive</option><option value="active">Active</option></select><span id="btCount" class="mono">0</span><button data-help="research" class="small-button icon-action">ⓘ</button></div></header><section class="panel grow pane-stack"><div class="table-scroll grow" tabindex="0" aria-label="Bluetooth"><table class="radio-table"><colgroup><col style="width:160px"><col style="width:190px"><col style="width:150px"><col style="width:70px"><col style="width:75px"><col style="width:75px"><col style="width:90px"></colgroup><thead><tr><th>BLE</th><th data-i="Имя"></th><th data-i="Тип"></th><th class="number">dBm</th><th class="number" data-i="Пакеты"></th><th class="number" data-i="Давность, с"></th><th data-i="Данные"></th></tr></thead><tbody id="btRows"></tbody></table></div></section></section>
+<section id="page-files" class="workspace-page" hidden><header class="page-header"><h1 data-i="Файлы"></h1><div class="toolbar"><span id="fsUsage" class="mono">—</span><button id="refreshFiles" data-i="Обновить"></button><button data-help="files" class="small-button icon-action">ⓘ</button></div></header><section class="panel grow pane-stack"><div class="table-scroll grow" tabindex="0" aria-label="Filesystem"><table class="fs-table"><colgroup><col style="width:55%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr><th data-i="Имя"></th><th class="number" data-i="Байты"></th><th data-i="Владелец"></th><th data-i="Действия"></th></tr></thead><tbody id="fileRows"></tbody></table></div></section></section>
+<section id="page-garage" class="workspace-page" hidden><header class="page-header"><h1 data-i="Гараж"></h1><div class="toolbar"><button id="newVehicle" data-i="Добавить машину"></button><button id="saveVehicle" data-i="Сохранить"></button><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></header><div class="garage-layout"><section class="panel"><header class="panel-header"><h2 data-i="Машины"></h2><button data-help="garage" class="small-button icon-action">ⓘ</button></header><div class="table-scroll" tabindex="0"><table class="vehicle-list"><colgroup><col style="width:55%"><col style="width:33%"><col style="width:12%"></colgroup><thead><tr><th data-i="Название"></th><th data-i="Оси / колёса"></th><th>★</th></tr></thead><tbody id="garageRows"></tbody></table></div></section>
+<section class="panel"><header class="panel-header"><input id="vehicleName" aria-label="Название машины" maxlength="48"><button id="addAxle" data-i="Добавить ось"></button><button id="removeVehicle" class="icon-action" aria-label="Удалить машину"><i class="ti ti-trash" aria-hidden="true"></i></button></header><div class="identification-controls"><button type="button" data-search="start" data-i="Начать поиск"></button><button type="button" data-search="stop" data-i="Остановить"></button><span data-search-status class="mono"></span><span data-selected-sensor class="mono"></span><button type="button" class="icon-action" data-clear-sensor aria-label="Снять выбор">×</button><button type="button" class="icon-action" data-help="identify" aria-label="Подробности">ⓘ</button></div><div class="vehicle-workbench"><div class="sensor-palette-pane" tabindex="0" aria-label="Датчики для назначения"><div id="garageSensors" class="sensor-palette"></div></div><div id="vehicleCanvas" class="vehicle-canvas" tabindex="0" aria-label="Колёса машины"></div></div><details class="geometry-editor"><summary data-i="Оси и колёса"></summary><div class="table-scroll" tabindex="0"><table><colgroup><col style="width:23%"><col style="width:24%"><col style="width:43%"><col style="width:10%"></colgroup><thead><tr><th data-i="Ось"></th><th data-i="Колесо"></th><th data-i="Известный датчик"></th><th></th></tr></thead><tbody id="assignmentRows"></tbody></table></div></details><footer class="bottom-controls"><span id="editState" class="muted">—</span><button id="discardVehicle" data-i="Отменить правки"></button></footer></section></div></section>
+<section id="page-known" class="workspace-page" hidden><header class="page-header"><h1 data-i="Известные датчики"></h1><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></header><div class="identification-controls"><button type="button" data-search="start" data-i="Начать поиск"></button><button type="button" data-search="stop" data-i="Остановить"></button><span data-search-status class="mono"></span><span data-selected-sensor class="mono"></span><button type="button" class="icon-action" data-clear-sensor aria-label="Снять выбор">×</button><button type="button" class="icon-action" data-help="identify" aria-label="Подробности">ⓘ</button></div><section class="panel"><header class="panel-header"><h2 data-i="Обнаружение и поиск"></h2><span id="driverCapabilities" class="mono"></span></header><div id="knownSensors" class="sensor-palette discovery-palette" tabindex="0" aria-label="Обнаруженные датчики"></div></section><section class="panel grow pane-stack"><div class="table-scroll grow" tabindex="0"><table class="known-instruments"><colgroup><col style="width:24%"><col style="width:12%"><col style="width:10%"><col style="width:9%"><col style="width:15%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup><thead><tr><th data-i="Системный ID"></th><th data-i="ID протокола"></th><th data-i="Протокол"></th><th data-i="Транспорт"></th><th data-i="Теги"></th><th class="number">bar</th><th class="number" data-i="Давность, с"></th><th data-i="Действия"></th></tr></thead><tbody id="knownRows"></tbody></table></div></section></section>
+<section id="page-radio" class="workspace-page" hidden>
+<header class="page-header"><h1 data-i="Настройки"></h1><div class="toolbar"><button id="saveRadio" data-i="Сохранить"></button><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></header>
+<section class="panel radio-settings"><div class="table-scroll"><table><colgroup><col style="width:16%"><col style="width:18%"><col style="width:24%"><col style="width:42%"></colgroup><thead><tr><th></th><th data-i="Сейчас"></th><th data-i="При старте"></th><th data-i="Сеанс, с (0=∞)"></th></tr></thead><tbody><tr><th>Wi-Fi</th><td><input id="wifiEnabled" type="checkbox" role="switch" aria-label="Wi-Fi сейчас"></td><td><input id="wifiBoot" type="checkbox" aria-label="Wi-Fi при старте"></td><td><input id="wifiWindow" type="number" min="0" max="86400" step="1" required aria-label="Длительность Wi-Fi, с"></td></tr></tbody></table></div><footer class="bottom-controls mono"><span id="wifiStateText">—</span></footer></section>
+<section class="panel radio-settings"><header class="panel-header"><h2>BLE</h2><span id="bleStateText" class="mono"></span></header><table><colgroup><col style="width:60%"><col style="width:40%"></colgroup><tbody><tr><th><label for="bleInterval" data-i="Интервал, мс"></label></th><td><input id="bleInterval" type="number" min="5" max="10000" step="5" required aria-label="Интервал BLE, мс"></td></tr><tr><th><label for="bleWindow" data-i="Окно приёма, мс"></label></th><td><input id="bleWindow" type="number" min="5" max="10000" step="5" required aria-label="Окно BLE, мс"></td></tr></tbody></table><footer class="bottom-controls mono"><span id="bleTiming">—</span><span data-i="BLE работает постоянно"></span></footer></section>
+<section class="panel radio-settings"><table><colgroup><col style="width:26%"><col style="width:74%"></colgroup><tbody><tr><th data-i="Экран ESP32"></th><td id="nativeThemes" class="scheme-buttons"></td></tr><tr><th data-i="Сайт"></th><td id="siteThemes" class="scheme-buttons"></td></tr></tbody></table></section>
+</section>
+</main></div></div>
+<dialog id="details"><header class="dialog-header"><h2 id="detailTitle"></h2><button id="closeDetails" class="icon-action" aria-label="Закрыть">✕</button></header><pre id="detailText" tabindex="0"></pre></dialog>
+<dialog id="confirm"><header class="dialog-header"><h2 data-i="Подтверждение"></h2></header><div class="dialog-body"><p id="confirmText"></p><div class="inline"><button id="confirmYes" data-i="Продолжить"></button><button id="confirmNo" data-i="Отмена"></button></div></div></dialog>
+<dialog id="tagEditor"><header class="dialog-header"><h2 data-i="Теги датчика"></h2><button class="icon-action" data-close="tagEditor" aria-label="Закрыть">✕</button></header><form id="tagForm" class="dialog-body"><div id="tagIdentity" class="mono"></div><label class="tag-field"><span data-i="Теги через запятую"></span><input id="tagValues" maxlength="520" aria-label="Теги через запятую" autocomplete="off"></label><div class="inline"><button id="saveTags" type="submit" data-i="Сохранить"></button><button type="button" class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></form></dialog>
+<template id="icon-car"><svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+  <path d="M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+  <path d="M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5" />
+</svg></template><template id="icon-home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7M5 9v12h14V9M9 21v-8h6v8"/></svg></template>
+<script>
+// Vehicle relations only. Instrument identity is never changed by a move.
+function assignSensorToWheel(vehicle, sensorId, axleIndex, wheelIndex) {
+  const target = vehicle?.axles[axleIndex]?.wheels[wheelIndex];
+  if (!sensorId || !target || target.sensor === sensorId) return false;
+  let source;
+  for (const axle of vehicle.axles)
+    for (const wheel of axle.wheels)
+      if (wheel.sensor === sensorId) source = wheel;
+  const displaced = target.sensor;
+  target.sensor = sensorId;
+  if (source) source.sensor = displaced;
+  return true;
+}
+
+// Application component: a TPMS instrument, independent of any wheel position.
+(()=>{
+class TpmsSensor extends HTMLElement {
+ set model(v){this._model=v;this.update();}get model(){return this._model;}
+ connectedCallback(){if(!this.button){this.button=document.createElement('button');this.button.type='button';this.button.className='sensor-tire';this.fields={};for(const name of ['protocol','transport','number','pressure','tags','age']){const e=document.createElement(name==='pressure'?'strong':'span');e.className='sensor-'+name;this.fields[name]=e;this.button.append(e);}this.replaceChildren(this.button);this.button.onclick=()=>!this._model?.readOnly&&this.dispatchEvent(new CustomEvent('tpms-select',{bubbles:true,detail:{id:this._model?.id}}));}this.update();}
+ update(){if(!this.button||!this._model)return;const m=this._model;this.dataset.sensorId=m.id;this.button.draggable=!m.readOnly;this.button.tabIndex=m.readOnly?-1:0;this.toggleAttribute("data-readonly",!!m.readOnly);this.toggleAttribute("data-hide-age",!!m.hideAge);this.button.classList.toggle('pressure-changed',!!m.changed);this.button.classList.toggle('sensor-selected',!!m.selected);this.button.setAttribute('aria-pressed',String(!!m.selected));this.button.setAttribute('aria-label',m.accessible);for(const [key,value]of Object.entries({protocol:m.protocol,transport:m.transport,number:m.number,pressure:m.pressure,tags:m.tags,age:m.age}))this.fields[key].textContent=value;}
+}
+customElements.define('tpms-sensor',TpmsSensor);
+})();
+
+'use strict';
+const $=id=>document.getElementById(id), app=$('app');
+const translations={
+'Главная':'Home','Перед':'Front','Показывать при включении':'Show at startup','Теги':'Tags','Теги датчика':'Sensor tags','Теги через запятую':'Tags separated by commas','Задача':'Task','Состояние':'State','Приоритет':'Priority','Стек, байт':'Stack, bytes','Выберите датчик':'Select a sensor','Нет доступных драйверов':'No available drivers','Снять датчик с колеса':'Unassign sensor','Назначить датчик колесу':'Assign sensor to wheel','Сбросить поиск':'Reset search','Начать поиск':'Start search','Остановить':'Stop','Снять выбор':'Clear selection','Оси и колёса':'Axles and wheels','Обнаружение и поиск':'Discovery and identification','Системный ID':'System ID','ID протокола':'Protocol ID','Колёса машины':'Vehicle wheels','Датчики для назначения':'Sensors to assign','Обнаруженные датчики':'Discovered sensors','Выбран':'Selected','Поиск':'Search','Поиск остановлен':'Search stopped','Ожидается пакет':'Waiting for a packet','Наш':'Ours','Не назначен':'Unassigned','Забыть':'Forget','Закрыть меню':'Close menu','Машина':'Vehicle','Раздел':'Section','Разделы':'Sections','Меню':'Menu','Название машины':'Vehicle name','Удалить машину':'Delete vehicle','Закрыть':'Close','Задачи':'Tasks','Вытеснено':'Evicted','Давление в шинах':'Tire pressure','Колесо':'Wheel','Датчик':'Sensor','Давность, с':'Age, s','Батарея, %':'Battery, %','Тревога':'Alarm','Приёмник':'Receiver','Реклама':'Advertising','Все устройства BT':'All Bluetooth devices','Пакеты':'Packets','Разбор':'Parsing','Известный':'Known','Действия':'Actions','Имя':'Name','Тип':'Type','Данные':'Data','Код':'Code','Файлы':'Files','Обновить':'Refresh','Байты':'Bytes','Владелец':'Owner','Гараж':'Garage','Добавить машину':'Add vehicle','Сохранить':'Save','Машины':'Vehicles','Название':'Name','Оси / колёса':'Axles / wheels','Добавить ось':'Add axle','Ось':'Axle','Известный датчик':'Known sensor','Отменить правки':'Discard edits','Известные датчики':'Known sensors','Добавить':'Add','Транспорт':'Transport','Протокол':'Protocol','Подтверждение':'Confirmation','Продолжить':'Continue','Отмена':'Cancel','Цветовая схема':'Color scheme','Плотность':'Density','Светлая':'Light','Кремовая':'Cream','Изумрудная':'Emerald','Тёмная':'Dark','Ультракомпактная':'Ultra compact','Компактная':'Compact','Обычная':'Normal','Подсказки':'Tooltips','Показывать подсказки':'Show tooltips','Подробности':'Details','Скачать':'Download','Наш':'Ours','Нет':'No','Да':'Yes','Ожидание':'Waiting','Подключено':'Connected','Нет связи':'Disconnected','Не назначен':'Unassigned','Сохранено':'Saved','Есть правки':'Unsaved changes','Редактировать':'Edit','Удалить':'Delete','Использовать':'Use','Добавить колесо':'Add wheel','Удалить ось':'Remove axle','Удалить колесо':'Remove wheel','Новая машина':'New vehicle','Нет машин':'No vehicles','Активна':'Active','Ошибка':'Error','Сохранение':'Saving','Сканирование':'Scanning','Пассивный':'Passive','Активный':'Active','Отменить несохранённые правки?':'Discard unsaved edits?','Удалить машину?':'Delete vehicle?','Удалить известный датчик?':'Delete known sensor?','Результат операции':'Operation result','Устройства':'Devices','Резерв':'Reserve','Чужие файлы':'Other files','Версия':'Revision','Журнал':'Journal','Секунды с последнего пакета; измерения сохраняются без срока давности.':'Seconds since the last packet; readings are retained without expiry.'};
+let lang=localStorage.getItem('tpms.language')||'ru',theme=localStorage.getItem('tpms.theme')||'cream',density=localStorage.getItem('tpms.density')||'nano',tooltips=localStorage.getItem('tpms.tooltips')==='true';
+let page='home',state={},settings={revision:0,active:'',known:[],garage:[]},stateAt=performance.now(),draft=null,dirty=false,busy=false,operation='—',socket,connected=false,researchRows=[],selectedReport=null,requestBusy=false,unique=0;
+const T=s=>lang==='ru'?s:(translations[s]||s),fmt=(v,d=0)=>v==null?'—':Number(v).toFixed(d),code=v=>Number(v||0).toString(16).toUpperCase().padStart(6,'0');
+const icon=name=>{const i=['car','home'].includes(name)?$('icon-'+name).content.firstElementChild.cloneNode(true):document.createElement('i');i.setAttribute('class','ti ti-'+name+(['car','home'].includes(name)?' icon-svg':''));i.setAttribute('aria-hidden','true');return i;};
+function el(tag,text,cls){const e=document.createElement(tag);if(text!=null)e.textContent=text;if(cls)e.className=cls;return e;}
+function btn(text,fn,tip){const b=el('button',text);if(['ⓘ','×','✕','+','↓','↑','<','>'].includes(text))b.classList.add('icon-action');b.type='button';b.onclick=fn;if(tip){b.dataset.tooltip=tip;b.setAttribute('aria-label',tip);}return b;}
+function opState(text,kind=''){operation=text;for(const b of document.querySelectorAll('[data-operation]')){b.className='operation icon-action '+kind;b.dataset.tooltip=text;b.setAttribute('aria-label',T('Результат операции')+': '+text);}}
+function details(title,text){$('detailTitle').textContent=title;$('detailText').textContent=text;if(!$('details').open)$('details').showModal();}
+$('closeDetails').onclick=()=>{$('details').close();selectedReport=null;};$('details').addEventListener('close',()=>selectedReport=null);
+for(const b of document.querySelectorAll('[data-operation]'))b.onclick=()=>details(T('Результат операции'),operation);
+for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>$(b.dataset.close).close();
+function confirmAction(text){return new Promise(resolve=>{$('confirmText').textContent=T(text);$('confirm').showModal();const done=x=>{$('confirm').close();resolve(x);};$('confirmYes').onclick=()=>done(true);$('confirmNo').onclick=()=>done(false);$('confirm').oncancel=()=>resolve(false);});}
+const pages=[['home','Главная','home'],['tpms','Давление в шинах','chart-bar'],['tom','TomTom','antenna-bars-5'],['bt','Все устройства BT','broadcast'],['files','Файлы','folder'],['garage','Гараж','car'],['known','Известные датчики','list'],['radio','Настройки','settings']];
+function appearance(){
+ app.dataset.theme=theme;app.dataset.density=density;app.dataset.tooltips=String(tooltips);
+ const themes=[['light','Светлая','sun'],['cream','Кремовая','ice-cream'],['emerald','Изумрудная','trees'],['dark','Тёмная','moon']],densities=[['nano','Ультракомпактная','baseline-density-small'],['mini','Компактная','baseline-density-medium'],['norm','Обычная','baseline-density-large']];
+ if(!themes.some(x=>x[0]===theme))theme='cream';if(!densities.some(x=>x[0]===density))density='nano';
+ $('appearanceText').textContent=T(themes.find(x=>x[0]===theme)[1])+' · '+density.toUpperCase();const m=$('appearanceMenu');m.replaceChildren();
+ for(const [title,items,selected,set] of [['Цветовая схема',themes,theme,v=>theme=v],['Плотность',densities,density,v=>density=v]]){m.append(el('strong',T(title)));for(const [id,name,image] of items){const b=btn('',()=>{set(id);localStorage.setItem('tpms.theme',theme);localStorage.setItem('tpms.density',density);appearance();});b.append(icon(image),document.createTextNode(' '+T(name)+(id===selected?' ✓':'')));b.classList.toggle('selected',id===selected);b.setAttribute('aria-pressed',String(id===selected));m.append(b);}}
+ m.append(el('strong',T('Подсказки')));const b=btn('',()=>{tooltips=!tooltips;localStorage.setItem('tpms.tooltips',tooltips);appearance();});b.append(icon(tooltips?'eye':'eye-off'),document.createTextNode(' '+T('Показывать подсказки')));b.setAttribute('role','switch');b.setAttribute('aria-checked',String(tooltips));m.append(b);
+}
+function localize(){document.documentElement.lang=lang;for(const e of document.querySelectorAll('[aria-label]')){if(!e.dataset.originalAria)e.dataset.originalAria=e.getAttribute('aria-label');e.setAttribute('aria-label',T(e.dataset.originalAria));}for(const o of $('scanMode').options)o.textContent=T(o.value==='active'?'Активный':'Пассивный');for(const e of document.querySelectorAll('[data-i]'))e.textContent=T(e.dataset.i);$('language').textContent=lang.toUpperCase();const nav=$('navigation');nav.replaceChildren();for(const [id,name,image]of pages){const a=el('a');a.href='#'+id;a.append(icon(image),el('span',T(name)));a.onclick=e=>{e.preventDefault();if(performance.now()<suppressMenuClickUntil)return;switchPage(id);};if(id==='garage')a.className='settings-menu';a.setAttribute('aria-label',T(name));a.dataset.tooltip=T(name);nav.append(a);}setPageVisible();appearance();renderSchemeButtons();renderSettings(false);renderState();syncMenu();}
+$('language').onclick=()=>{lang=lang==='ru'?'en':'ru';localStorage.setItem('tpms.language',lang);localize();if(page==='tom'||page==='bt')renderResearch();};
+const narrow=matchMedia('(max-width:900px)');
+let mobileMenuOpen=false,desktopMenuCollapsed=localStorage.getItem('tpms.menu')==='collapsed',gesture=null,suppressMenuClickUntil=0;
+function syncMenu(focus=false){
+ app.classList.toggle('mobile-menu-open',narrow.matches&&mobileMenuOpen);
+ app.classList.toggle('menu-collapsed',!narrow.matches&&desktopMenuCollapsed);
+ $('menuToggle').setAttribute('aria-expanded',String(narrow.matches?mobileMenuOpen:!desktopMenuCollapsed));
+ $('menuBackdrop').hidden=!narrow.matches||!mobileMenuOpen;
+ document.querySelector('.shell-sidebar').inert=narrow.matches&&!mobileMenuOpen;
+ document.querySelector('main').inert=narrow.matches&&mobileMenuOpen;
+ if(focus&&narrow.matches&&mobileMenuOpen)($('navigation').querySelector('a.active')||$('navigation').querySelector('a'))?.focus();
+}
+function closeMenu(restore=false){mobileMenuOpen=false;syncMenu();if(restore)$('menuToggle').focus();}
+$('menuToggle').onclick=()=>{if(narrow.matches){mobileMenuOpen=!mobileMenuOpen;syncMenu(true);}else{desktopMenuCollapsed=!desktopMenuCollapsed;localStorage.setItem('tpms.menu',desktopMenuCollapsed?'collapsed':'expanded');syncMenu();}};
+$('menuBackdrop').onclick=()=>closeMenu(true);
+narrow.addEventListener('change',()=>{mobileMenuOpen=false;gesture=null;app.classList.remove('menu-dragging');syncMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&narrow.matches&&mobileMenuOpen){closeMenu(true);e.preventDefault();}});
+document.addEventListener('pointerdown',e=>{
+ if(!narrow.matches||e.button!==0)return;
+ const aside=document.querySelector('.shell-sidebar'),rect=document.querySelector('.shell-body').getBoundingClientRect();
+ if(e.clientY<rect.top)return;
+ if(!mobileMenuOpen&&e.clientX>14)return;
+ if(mobileMenuOpen&&!aside.contains(e.target))return;
+ gesture={id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,open:mobileMenuOpen,active:false};
+},{passive:true});
+document.addEventListener('pointermove',e=>{
+ if(!gesture||e.pointerId!==gesture.id)return;
+ const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+ if(!gesture.active){if(Math.abs(dy)>16&&Math.abs(dy)>Math.abs(dx)){gesture=null;return;}if(Math.abs(dx)<12||Math.abs(dx)<Math.abs(dy)*1.3)return;gesture.active=true;app.classList.add('menu-dragging');(gesture.open?document.querySelector('.shell-sidebar'):$('menuEdge')).setPointerCapture(e.pointerId);}
+ gesture.dx=dx;e.preventDefault();const width=document.querySelector('.shell-sidebar').getBoundingClientRect().width;
+ app.style.setProperty('--drawer-x',Math.max(-width,Math.min(0,(gesture.open?0:-width)+dx))+'px');
+},{passive:false});
+function endMenuGesture(e){if(!gesture||e.pointerId!==gesture.id)return;const g=gesture;gesture=null;app.classList.remove('menu-dragging');app.style.removeProperty('--drawer-x');if(g.active){suppressMenuClickUntil=performance.now()+400;mobileMenuOpen=g.open?g.dx>-50:g.dx>45;syncMenu();e.preventDefault();}}
+document.addEventListener('pointerup',endMenuGesture,{passive:false});
+document.addEventListener('pointercancel',()=>{gesture=null;app.classList.remove('menu-dragging');app.style.removeProperty('--drawer-x');});
+syncMenu();
+function setPageVisible(){for(const [id]of pages)$('page-'+id).hidden=id!==page;for(const a of $('navigation').querySelectorAll('a'))a.classList.toggle('active',a.hash==='#'+page);}
+async function switchPage(id){if(!pages.some(p=>p[0]===id))id='home';if(page==='garage'&&dirty&&id!=='garage'&&!await confirmAction('Отменить несохранённые правки?'))return;if(page==='garage'&&id!=='garage')dirty=false;page=id;location.hash=id;setPageVisible();if(narrow.matches)closeMenu(false);if(id==='files')loadFiles();if(id==='bt'||id==='tom')loadResearch();if(id==='garage')renderSettings(false);if(['home','known','garage','tom'].includes(id))loadTpms();}
+window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==page)switchPage(id);});
+function tableRows(body,items,key,update){const existing=new Map([...body.children].map(r=>[r.dataset.key,r]));for(let i=0;i<items.length;i++){const item=items[i],k=String(key(item,i));let tr=existing.get(k);if(!tr){tr=document.createElement('tr');tr.dataset.key=k;}existing.delete(k);update(tr,item,i);if(body.children[i]!==tr)body.insertBefore(tr,body.children[i]||null);}for(const r of existing.values())r.remove();}
+function cell(tr,i,text,cls){while(tr.children.length<=i)tr.append(el('td'));const td=tr.children[i];if(text!=null&&td.textContent!==String(text))td.textContent=text;if(cls)td.className=cls;return td;}
+function age(last){return Math.max(0,Math.floor((Number(state.uptimeMs||0)+performance.now()-stateAt-Number(last||0))/1000));}
+let radioDirty=false, radioPending=false;
+Object.assign(translations,{'Сеанс, с (0=∞)':'Session, s (0=∞)','Настройки':'Settings','Сейчас':'Now','При старте':'At startup','Длительность Wi-Fi, с':'Wi-Fi duration, s','Wi-Fi сейчас':'Wi-Fi now','Wi-Fi при старте':'Wi-Fi at startup','Выключен':'Off','Интервал, мс':'Interval, ms','Окно приёма, мс':'Scan window, ms','Интервал BLE, мс':'BLE interval, ms','Окно BLE, мс':'BLE window, ms','BLE работает постоянно':'BLE runs continuously','Экран ESP32':'ESP32 display','Сайт':'Website','Некорректные параметры радио':'Invalid radio parameters'});
+function renderRadio(){
+ const w=state.wifi,b=state.ble;
+ if(!radioPending)$('wifiEnabled').checked=!!w?.enabled;
+ $('wifiEnabled').disabled=!w||radioPending;
+ $('wifiStateText').textContent='Wi-Fi '+(w?.enabled?(w.connected?'✓ ':'… ')+(w.remainingSeconds<0?'∞':w.remainingSeconds+' s'):T('Выключен'));
+ $('bleStateText').textContent=b?.state||'—';
+ $('bleTiming').textContent=b?.intervalMs?b.windowMs+' / '+b.intervalMs+' ms · '+Math.round(b.windowMs*100/b.intervalMs)+'%'+(b.pending?' …':''):'—';
+ for(const [host,selected] of [['nativeThemes',settings.nativeTheme||'cream'],['siteThemes',theme]])for(const button of $(host).children)button.setAttribute('aria-pressed',String(button.dataset.scheme===selected));
+}
+function renderSchemeButtons(){
+ for(const host of ['nativeThemes','siteThemes']){
+   const target=$(host);target.replaceChildren();
+   for(const [id,title] of [['light','Светлая'],['cream','Кремовая'],['emerald','Изумрудная'],['dark','Тёмная'],...(host==='nativeThemes'?[['night','Ночная']]:[])]){
+     const b=btn(T(title),async()=>{if(host==='nativeThemes')await perform({op:'appearance.put',theme:id});else{theme=id;localStorage.setItem('tpms.theme',theme);appearance();renderRadio();}});
+     b.dataset.scheme=id;target.append(b);
+   }
+ }
+ renderRadio();
+}
+for(const id of ['wifiWindow','bleWindow','bleInterval','wifiBoot'])$(id).oninput=()=>{radioDirty=true;$(id).classList.remove('invalid');};
+$('wifiEnabled').onchange=async e=>{
+ const enabled=e.target.checked;radioPending=true;renderRadio();
+ try{await api('/api/wifi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled,seconds:settings.wifiWindowSeconds??0})});opState(enabled?'✓':T('Выключен'),'ok');}
+ catch(error){opState(error.message,'error');}
+ finally{setTimeout(()=>{radioPending=false;loadState();},2500);}
+};
+$('saveRadio').onclick=async()=>{
+ for(const id of ['wifiWindow','bleWindow','bleInterval'])if(!$(id).validity.valid || $(id).value===''){$(id).classList.add('invalid');opState(T('Некорректные параметры радио'),'error');return;}
+ if(Number($('bleWindow').value)>Number($('bleInterval').value)){$('bleWindow').classList.add('invalid');opState(T('Некорректные параметры радио'),'error');return;}
+ await perform({op:'radio.put',wifiEnabled:$('wifiBoot').checked,wifiWindowSeconds:Number($('wifiWindow').value),bleIntervalMs:Number($('bleInterval').value),bleWindowMs:Number($('bleWindow').value)},()=>radioDirty=false);
+};
+function renderState(){
+ renderRadio();
+ renderHomeVehicle();
+ $('ip').textContent='IP '+(state.ip||'—');$('connection').textContent=T(connected?'Подключено':'Нет связи');$('connection').className=connected?'ok':'error';
+ const car=settings.garage.find(c=>c.id===settings.active);$('vehicleTitle').textContent=car?.name||T('Нет машин');$('btStatus').textContent=(state.scan||'—')+' · '+(state.scanMode||'—');
+ $('receiverCounters').textContent=`RX ${state.reports||0} / drop ${state.dropped||0} · ${T('Версия')} ${state.settingsRevision??0} · FS ${state.storage?.mounted?'✓':'×'}`;
+ tableRows($('wheelRows'),state.sensors||[],(_,i)=>i,(tr,s)=>{cell(tr,0,s.position||'—');cell(tr,1,s.identity||(s.id?code(s.id):'—'),'mono');cell(tr,2,fmt(s.pressure_Bar,2),'number');cell(tr,3,fmt(s.temperatureC,1),'number');const a=cell(tr,4,s.present?age(s.lastSeenMs):'—','number age');a.dataset.last=s.present?s.lastSeenMs:'';cell(tr,5,fmt(s.batteryPercentage),'number');cell(tr,6,s.present?String(s.alarmFlag):'—','number');});
+ tableRows($('taskRows'),[...(state.diagnostic?.tasks||[])].sort((a,b)=>b.rp-a.rp),t=>t.tn,(tr,t)=>{cell(tr,0,t.name);cell(tr,1,t.tn,'number');cell(tr,2,t.s,'mono');cell(tr,3,t.p,'number');cell(tr,4,t.sf,'number');cell(tr,5,fmt(t.rp,1),'number');});
+ $('scanMode').value=state.scanMode||'passive';
+}
+function acceptState(s){if(s.msgType!=='snapshot'||!s.ready)return;state=s;stateAt=performance.now();renderState();if(settings.revision!==s.settingsRevision)loadSettings(false);}
+async function api(path,options){const r=await fetch(path,{cache:'no-store',...options});let v;try{v=await r.json();}catch{throw Error('HTTP '+r.status);}if(!r.ok)throw Error(v.error||('HTTP '+r.status));return v;}
+async function loadState(){try{acceptState(await api('/api/state'));connected=true;}catch(e){connected=false;}renderState();}
+function connect(){socket=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');socket.onopen=()=>{connected=true;renderState();};socket.onmessage=e=>{try{const s=JSON.parse(e.data);if(s.msgType==='refresh')loadState();else acceptState(s);}catch{}};socket.onclose=()=>{connected=false;renderState();setTimeout(connect,2000);};socket.onerror=()=>socket.close();}
+async function loadSettings(force){try{const next=await api('/api/settings');settings=next;renderSettings(force);}catch(e){opState(e.message,'error');}}
+async function perform(command,onSuccess){if(busy)return false;busy=true;opState(T('Сохранение'));for(const b of document.querySelectorAll('#saveVehicle,#newVehicle'))b.disabled=true;
+ try{const queued=await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...command,revision:settings.revision})});let result;
+  for(let i=0;i<120;i++){await new Promise(r=>setTimeout(r,250));result=await api('/api/operation?id='+queued.id);if(result.done)break;}if(!result?.done)throw Error('operation_timeout');if(!result.ok)throw Error(result.error);
+  opState(T('Сохранено'),'ok');if(onSuccess)onSuccess();await loadSettings(false);await loadState();return true;
+ }catch(e){opState(T('Ошибка')+': '+e.message,'error');return false;}finally{busy=false;for(const b of document.querySelectorAll('#saveVehicle,#newVehicle'))b.disabled=false;}}
+for(const id of ['activeVehicle','homeActiveVehicle'])$(id).onchange=e=>perform({op:'vehicle.select',id:e.target.value});
+function renderSettings(force){
+ if(!radioDirty || force){$('wifiWindow').value=settings.wifiWindowSeconds??0;$('bleWindow').value=settings.bleWindowMs??80;$('bleInterval').value=settings.bleIntervalMs??80;$('wifiBoot').checked=settings.wifiEnabled??true;radioDirty=false;}
+ for(const id of ['activeVehicle','homeActiveVehicle']){const active=$(id);active.replaceChildren();for(const c of settings.garage){const o=el('option',c.name);o.value=c.id;active.append(o);}active.value=settings.active;active.disabled=!settings.garage.length;}
+ tableRows($('garageRows'),settings.garage,c=>c.id,(tr,c)=>{const td=cell(tr,0);td.replaceChildren(btn(c.name,async()=>{if(dirty&&!await confirmAction('Отменить несохранённые правки?'))return;draft=structuredClone(c);dirty=false;renderAssignments();}));cell(tr,1,c.axles.length+' / '+c.axles.reduce((n,a)=>n+a.wheels.length,0),'number');const star=btn(settings.active===c.id?'★':'☆',()=>makeDefaultVehicle(c.id));star.className='icon-action';star.setAttribute('aria-label',T('Показывать при включении')+' '+c.name);star.setAttribute('aria-pressed',String(settings.active===c.id));cell(tr,2).replaceChildren(star);tr.classList.toggle('selected-row',draft?.id===c.id);});
+ if(!draft||force){draft=structuredClone(settings.garage.find(c=>c.id===settings.active)||settings.garage[0]||null);dirty=false;renderAssignments();}else if(!dirty){const c=settings.garage.find(c=>c.id===draft.id);if(c)draft=structuredClone(c);renderAssignments();}
+ renderKnownDevices();renderSensorPalettes();renderVehicleCanvas();renderState();
+}
+async function makeDefaultVehicle(id){if(draft?.id===id&&dirty){const value=structuredClone(draft);await perform({op:'vehicle.put',vehicle:value,makeDefault:true},()=>dirty=false);}else if(settings.active!==id)await perform({op:'vehicle.select',id});}
+function markDirty(){dirty=true;$('editState').textContent=T('Есть правки');$('editState').className='dirty';}
+function input(value,change,label){const i=el('input');i.value=value;i.maxLength=32;i.setAttribute('aria-label',label);i.oninput=()=>{change(i.value);markDirty();};return i;}
+function renderAssignments(){renderVehicleCanvas();const body=$('assignmentRows');body.replaceChildren();$('vehicleName').value=draft?.name||'';$('vehicleName').disabled=!draft;$('editState').textContent=T(dirty?'Есть правки':'Сохранено');$('editState').className=dirty?'dirty':'muted';if(!draft)return;
+ for(const [ai,a]of draft.axles.entries())for(const [wi,w]of a.wheels.entries()){const tr=el('tr'),axis=el('td'),wheel=el('td'),assign=el('td'),actions=el('td');if(wi===0){const controls=el('div',null,'cell-actions');axis.append(controls);controls.append(input(a.name,v=>a.name=v,T('Ось')),btn('+',()=>{if(a.wheels.length>=8)return; a.wheels.push({name:T('Колесо')+' '+(a.wheels.length+1),sensor:''});markDirty();renderAssignments();},T('Добавить колесо')),btn('×',()=>{if(draft.axles.length<=1)return;draft.axles.splice(ai,1);markDirty();renderAssignments();},T('Удалить ось')));}wheel.append(input(w.name,v=>w.name=v,T('Колесо')));const select=el('select');select.setAttribute('aria-label',a.name+' / '+w.name);let empty=el('option',T('Не назначен'));empty.value='';select.append(empty);for(const k of settings.known){const o=el('option',(k.protocolId||k.identity||k.id)+' · '+k.transport);o.value=k.id;select.append(o);}select.value=w.sensor;select.onchange=()=>{if(select.value)assignInstrument(select.value,ai,wi);else{w.sensor='';markDirty();renderAssignments();}};assign.append(select);actions.append(btn('×',()=>{if(a.wheels.length<=1)return;a.wheels.splice(wi,1);markDirty();renderAssignments();},T('Удалить колесо')));tr.append(axis,wheel,assign,actions);body.append(tr);}
+}
+$('vehicleName').oninput=e=>{if(draft){draft.name=e.target.value;markDirty();}};
+$('newVehicle').onclick=async()=>{if(dirty&&!await confirmAction('Отменить несохранённые правки?'))return;draft={id:'vehicle-'+Date.now().toString(36)+'-'+(++unique),name:T('Новая машина'),axles:[{name:T('Ось')+' 1',wheels:[{name:T('Колесо')+' 1',sensor:''}]}]};dirty=true;renderAssignments();};
+$('addAxle').onclick=()=>{if(!draft||draft.axles.length>=16)return;draft.axles.push({name:T('Ось')+' '+(draft.axles.length+1),wheels:[{name:T('Колесо')+' 1',sensor:''}]});markDirty();renderAssignments();};
+$('saveVehicle').onclick=()=>{if(!draft)return;const value=structuredClone(draft);perform({op:'vehicle.put',vehicle:value},()=>{dirty=false;});};
+$('discardVehicle').onclick=async()=>{if(!dirty||await confirmAction('Отменить несохранённые правки?')){draft=null;renderSettings(true);}};
+$('removeVehicle').onclick=async()=>{if(draft&&await confirmAction('Удалить машину?'))perform({op:'vehicle.remove',id:draft.id},()=>{draft=null;dirty=false;});};
+async function loadResearch(){if(requestBusy||!['tom','bt'].includes(page))return;requestBusy=true;try{const result=await api('/api/research?scope='+page);researchRows=result.rows||[];$(page+'Count').textContent=researchRows.length+' / 32 · '+(result.evicted||0)+' '+T('Вытеснено');renderResearch();if(selectedReport&&$('details').open){const {scope,id}=selectedReport;try{$('detailText').textContent=JSON.stringify(await api('/api/research?scope='+scope+'&detail='+encodeURIComponent(id)),null,2);}catch{}}}catch(e){opState(e.message,'error');}finally{requestBusy=false;}}
+async function showReport(row){selectedReport={scope:page,id:row.id};try{details(row.address,JSON.stringify(await api('/api/research?scope='+page+'&detail='+encodeURIComponent(row.id)),null,2));}catch(e){opState(e.message,'error');}}
+function renderResearch(){const tom=page==='tom';const body=$(tom?'tomRows':'btRows');tableRows(body,researchRows,r=>r.id,(tr,r)=>{cell(tr,0,r.address+' / '+r.address_type+' / '+r.sid,'mono');if(tom){cell(tr,1,r.tpms?.sticker||'—','mono');cell(tr,2,r.rssi,'number');cell(tr,3,r.packets,'number');const a=cell(tr,4,age(r.last_seen_ms),'number age');a.dataset.last=r.last_seen_ms;cell(tr,5,r.tpms?'TomTom':r.status==='complete'?'signature / length':r.status);const known=settings.known.find(k=>k.transport==='ble'&&k.protocol==='tomtom'&&k.code===r.tpms?.code);cell(tr,6,known?(known.protocolId||known.identity):'—');const td=cell(tr,7);if(!td.children.length){td.append(btn('ⓘ',()=>showReport(r),T('Подробности')),btn(T('Наш'),()=>{},T('Добавить')));}td.children[0].onclick=()=>showReport(r);td.children[1].textContent=T('Наш');td.children[1].disabled=!!known||!r.tpms;td.children[1].onclick=()=>recognizeResearch(r);}
+ else{cell(tr,1,r.name||'—');cell(tr,2,r.classification?.type||'unknown');cell(tr,3,r.rssi,'number');cell(tr,4,r.packets,'number');const a=cell(tr,5,age(r.last_seen_ms),'number age');a.dataset.last=r.last_seen_ms;const td=cell(tr,6);if(!td.children.length)td.append(btn('ⓘ',()=>{},T('Подробности')));td.firstChild.onclick=()=>showReport(r);}});}
+$('scanMode').onchange=async e=>{try{await api('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:e.target.value})});opState(T('Сканирование'),'ok');}catch(e){opState(e.message,'error');}};
+async function loadFiles(){try{const fs=await api('/api/files');$('fsUsage').textContent=fmt(fs.used/1024)+' / '+fmt(fs.total/1024)+' KiB';tableRows($('fileRows'),fs.files||[],f=>f.name,(tr,f)=>{cell(tr,0,f.name);cell(tr,1,f.bytes,'number');cell(tr,2,f.owner);const td=cell(tr,3);td.replaceChildren(btn('ⓘ',()=>readFile(f,true),T('Подробности')),btn('↓',()=>readFile(f,false),T('Скачать')));});}catch(e){opState(e.message,'error');}}
+async function readFile(f,preview){try{const chunks=[];let offset=0,total=f.bytes;do{const part=await api('/api/file?name='+encodeURIComponent(f.name)+'&offset='+offset);const bytes=Uint8Array.from(part.hex.match(/../g)||[],x=>parseInt(x,16));chunks.push(bytes);offset+=bytes.length;total=part.total;if(!bytes.length)break;}while(offset<total&&offset<4194304);const blob=new Blob(chunks);if(preview){const text=await blob.text();details(f.name, f.name.startsWith('tpms.cfg.')?'TPMSCFG1 · '+T('Версия')+' / '+f.bytes+' bytes\n\n'+new TextDecoder().decode((new Uint8Array(await blob.arrayBuffer())).slice(32)):text);}else{const a=el('a');a.href=URL.createObjectURL(blob);a.download=f.name.replaceAll('/','_');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}}catch(e){opState(e.message,'error');}}
+$('refreshFiles').onclick=loadFiles;$('receiverInfo').onclick=()=>details(T('Приёмник'),JSON.stringify(state,null,2));
+const help={tpms:['Секунды с последнего пакета; измерения сохраняются без срока давности.','Seconds since the last packet; readings are retained without expiry.'],research:['До 32 наблюдений на список. TomTom хранится отдельно от общего скана. ⓘ открывает все принятые данные: AD, raw hex, radio, классификацию и поля TPMS. Отсутствие устройства в списке не доказывает отсутствие радиопередачи. Active запрашивает Scan Response; это не соединение GATT.','Up to 32 observations per list. TomTom uses a separate collector. Details expose all received AD, raw hex, radio, classification and TPMS fields. A missing row does not prove radio silence. Active requests Scan Response without GATT.'],files:['Общая FS 4 МиБ. Браузер только читает и скачивает. tpms.* принадлежит TPMS; чужие файлы не изменяются. Настройки: два проверяемых слота. Диагностика поездки: tpms.diag.0 и .1, по 128 КиБ, запись до 6 часов после включения. Общий резерв 1 МиБ.','Shared 4 MiB FS. Read and download only. TPMS owns tpms.*; other files are preserved. Settings use two verified slots. Trip diagnostics: tpms.diag.0 and .1, 128 KiB each, for up to six hours after boot. Shared reserve: 1 MiB.'],garage:['Сначала добавьте найденный прибор в известные, затем назначьте его колесу. У машины можно менять оси и число колёс на каждой оси. Один датчик нельзя назначить двум колёсам одной машины. Выбор активной машины — на странице TPMS. Сохранение транзакционное, конфликты версий отклоняются.','Add a discovered instrument to known sensors, then assign it to a wheel. Edit axles and each axle’s wheel count. A sensor can be assigned once within a vehicle. Select the active vehicle on TPMS. Saves are transactional; revision conflicts are rejected.']};
+for(const b of document.querySelectorAll('[data-help]'))b.onclick=()=>details(T('Подробности'),help[b.dataset.help][lang==='ru'?0:1]);
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+setInterval(()=>{let unix=Number(state.unixSeconds||0)+(performance.now()-stateAt)/1000;$('clock').textContent=unix>1700000000?new Date(unix*1000).toLocaleTimeString(lang==='ru'?'ru-RU':'en-GB',{hour12:false,timeZone:'Asia/Yekaterinburg'}):'--:--:--';for(const e of document.querySelectorAll('.age[data-last]'))e.textContent=e.dataset.last===''?'—':age(e.dataset.last);if(!connected)loadState();if(page==='tom'||page==='bt')loadResearch();if(['home','known','garage','tom'].includes(page))loadTpms();},1000);
+let tpmsData={devices:[],drivers:[],search:{}},tpmsAt=performance.now(),tpmsLoading=false,selectedSensor='',tagSensorId='';
+const instrument=id=>tpmsData.devices.find(d=>d.id===id)||(()=>{const k=settings.known.find(k=>k.id===id);return k?{...k,known:true,protocolId:k.protocolId||k.identity,observed:false}:null;})();
+function sensorModel(d){const ageSeconds=d.observed?Math.max(0,Math.floor((Number(tpmsData.uptimeMs||0)+performance.now()-tpmsAt-d.lastSeenMs)/1000)):null;const number=d.protocolId||d.id;const pressure=d.pressureBar==null?'— bar':fmt(d.pressureBar,2)+' bar';const tooltip=`${T('Системный ID')}: ${d.id}\n${T('ID протокола')}: ${number}\n${d.address||'—'}\nΔ ${d.deltaPa==null?'—':fmt(d.deltaPa/100000,2)} bar / max ${d.peakDeltaPa==null?'—':fmt(d.peakDeltaPa/100000,2)} bar`;
+ const tags=settings.known.find(k=>k.id===d.id)?.tags||d.tags||[];
+ return {id:d.id,protocol:d.protocol==='tomtom'?'TomTom':d.protocol,transport:d.transport==='ble'?'BLE':d.transport,number,pressure,tags:tags.join(', '),age:ageSeconds==null?'— s':ageSeconds+' s',changed:!!d.changed,selected:selectedSensor===d.id,tooltip:tooltip+'\n'+T('Теги')+': '+tags.join(', '),accessible:`${d.protocol} / ${d.transport} / ${number}, ${pressure}, ${tags.join(', ')}, ${d.id}`};}
+function tagButton(id){const b=btn('',()=>editTags(id),T('Теги'));b.className='icon-action tag-editor-button';delete b.dataset.tooltip;b.append(icon('tag'));return b;}
+function editTags(id){const k=settings.known.find(k=>k.id===id);if(!k)return;tagSensorId=id;$('tagIdentity').textContent=(k.protocolId||k.identity)+' · '+k.id;$('tagValues').value=(k.tags||[]).join(', ');$('tagEditor').showModal();$('tagValues').focus();}
+$('tagForm').onsubmit=async e=>{e.preventDefault();const tags=[...new Set($('tagValues').value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean))];$('saveTags').disabled=true;try{if(await perform({op:'known.tags',id:tagSensorId,tags})){$('tagEditor').close();await loadTpms();}}finally{$('saveTags').disabled=false;}};
+function renderKnownDevices(){tableRows($('knownRows'),settings.known,k=>k.id,(tr,k)=>{const d=instrument(k.id)||k;cell(tr,0,k.id,'mono');cell(tr,1,k.protocolId||k.identity||'—','mono');cell(tr,2,k.protocol);cell(tr,3,k.transport);const tagCell=cell(tr,4,(k.tags||[]).join(', ')||'—');tagCell.dataset.tooltip=(k.tags||[]).join(', ');cell(tr,5,fmt(d.pressureBar,2),'number');cell(tr,6,d.observed?sensorModel(d).age:'—','number');const td=cell(tr,7);if(!td.children.length)td.append(tagButton(k.id),btn('ⓘ',()=>{},T('Подробности')),btn('×',()=>{},T('Забыть')));td.children[1].onclick=()=>details(k.id,JSON.stringify({...k,observation:d},null,2));td.children[2].onclick=async()=>{if(await confirmAction('Удалить известный датчик?'))perform({op:'known.remove',id:k.id});};});}
+function renderPalette(id){const host=$(id);const old=new Map([...host.children].map(e=>[e.dataset.key,e]));const devices=[...tpmsData.devices];for(const k of settings.known)if(!devices.some(d=>d.id===k.id))devices.push(instrument(k.id));
+ for(let i=0;i<devices.length;i++){const d=devices[i];let wrap=old.get(d.id);if(!wrap){wrap=el('div',null,'sensor-palette-item');wrap.dataset.key=d.id;const actions=el('div',null,'sensor-palette-actions');actions.append(btn(T('Наш'),()=>{}),tagButton(d.id));wrap.append(document.createElement('tpms-sensor'),actions);}old.delete(d.id);wrap.firstChild.model=sensorModel(d);const actions=wrap.lastChild,add=actions.firstChild;add.hidden=!!d.known;add.disabled=!d.observed||!d.available;add.textContent=T('Наш');add.onclick=()=>bindInstrument(d.id);actions.lastChild.hidden=!d.known;if(host.children[i]!==wrap)host.insertBefore(wrap,host.children[i]||null);}for(const e of old.values())e.remove();}
+function renderSensorPalettes(){renderPalette('knownSensors');renderPalette('garageSensors');for(const e of document.querySelectorAll('[data-search-status]'))e.textContent=tpmsData.search?.active?T('Поиск')+' · Δ ≥ 0.10 bar':T('Поиск остановлен');const chosen=instrument(selectedSensor);for(const e of document.querySelectorAll('[data-selected-sensor]'))e.textContent=chosen?T('Выбран')+': '+(chosen.protocolId||chosen.id):T('Выберите датчик');$('driverCapabilities').textContent=(tpmsData.drivers||[]).map(d=>d.label).join(' · ')||T('Нет доступных драйверов');for(const b of document.querySelectorAll('[data-search="start"]'))b.textContent=T(tpmsData.search?.active?'Сбросить поиск':'Начать поиск');for(const b of document.querySelectorAll('[data-search="stop"]'))b.disabled=!tpmsData.search?.active;}
+function renderVehicleCanvas(){renderVehicleDiagram($('vehicleCanvas'),draft,true);}
+function renderHomeVehicle(){const vehicle=settings.garage.find(c=>c.id===settings.active);$('homeVehicleTitle').textContent=vehicle?.name||T('Нет машин');renderVehicleDiagram($('homeVehicleCanvas'),vehicle,false);}
+function renderVehicleDiagram(root,vehicle,editable){
+ if(!vehicle){root.replaceChildren();delete root.dataset.signature;return;}
+ const signature=vehicle.id+'|'+vehicle.axles.map(a=>a.wheels.length).join(',')+'|'+editable;
+ if(signature!==root.dataset.signature){
+  root.dataset.signature=signature;root.replaceChildren();const frame=el('section',null,'vehicle-frame');
+  const widest=Math.max(...vehicle.axles.map(a=>a.wheels.length));
+  frame.style.setProperty('--vehicle-width',(widest===1?112:84*widest+120)+'px');
+  root.append(frame);
+  const front=el('div','↑','vehicle-front');front.setAttribute('role','img');front.setAttribute('aria-label',T('Перед'));frame.append(front);
+  for(const [ai,a]of vehicle.axles.entries()){
+   const row=el('section',null,'vehicle-axle'),slots=el('div',null,'axle-wheels');
+   row.dataset.axleRow=ai;slots.dataset.count=a.wheels.length;
+   const left=Math.ceil(a.wheels.length/2),right=a.wheels.length-left;
+   slots.style.gridTemplateColumns=a.wheels.length===1?'1fr':`repeat(${left},80px) minmax(20px,1fr) repeat(${right},80px)`;
+   for(const [wi]of a.wheels.entries()){
+    const slot=el('div',null,'wheel-drop');slot.dataset.axle=ai;slot.dataset.wheel=wi;
+    slot.style.gridColumn=String(a.wheels.length===1?1:wi<left?wi+1:wi+2);
+    const content=el('div',null,'wheel-instrument');
+    let footer;
+    if(editable){footer=btn('×',()=>{if(!draft||draft.id!==vehicle.id)return;draft.axles[ai].wheels[wi].sensor='';markDirty();renderAssignments();},T('Снять датчик с колеса'));delete footer.dataset.tooltip;}
+    else{footer=el('div',null,'wheel-telemetry');footer.append(el('span',null,'wheel-temperature'),el('span',null,'wheel-age'));}
+    slot.append(content,footer);slots.append(slot);
+   }
+   row.append(slots);frame.append(row);
+  }
+ }
+ for(const [ai,a]of vehicle.axles.entries()){
+  const slots=root.firstChild.children[ai+1].firstChild;
+  for(const [wi,w]of a.wheels.entries()){
+   const slot=slots.children[wi];slot.dataset.sensor=w.sensor;slot.setAttribute('aria-label',a.name+' / '+w.name);if(editable)slot.lastChild.hidden=!w.sensor;
+   const content=slot.firstChild,d=instrument(w.sensor);
+   if(d){let tile=content.querySelector('tpms-sensor');if(!tile){tile=document.createElement('tpms-sensor');content.replaceChildren(tile);}tile.model={...sensorModel(d),readOnly:!editable,hideAge:!editable,selected:editable&&selectedSensor===d.id};}
+   else{let empty=content.querySelector(':scope > .empty-wheel');if(!empty){empty=editable?btn('+',()=>assignInstrument(selectedSensor,ai,wi),T('Назначить датчик колесу')):el('div','—');delete empty.dataset.tooltip;empty.classList.remove('icon-action');empty.classList.add('empty-wheel');content.replaceChildren(empty);}empty.setAttribute('aria-label',T(editable?'Назначить датчик колесу':'Не назначен')+' '+a.name+' / '+w.name);}
+   if(!editable){slot.lastChild.firstChild.textContent=fmt(d?.temperatureC,0)+'°C';slot.lastChild.lastChild.textContent=d?sensorModel(d).age.replace(' s','s'):'—s';}
+  }
+ }
+}
+async function bindInstrument(id){const d=instrument(id);if(!d?.observed){opState(T('Ожидается пакет'),'error');return false;}if(d.known)return true;const ok=await perform({op:'known.bind',discoveryId:id});if(ok)await loadTpms();return ok;}
+async function assignInstrument(id,ai,wi){if(!id||!draft){opState(T('Выберите датчик'),'error');return;}const vehicleId=draft.id;const d=instrument(id);if(!d)return;if(!d.known&&!await bindInstrument(id))return;if(!draft||draft.id!==vehicleId||!draft.axles[ai]?.wheels[wi])return;if(!assignSensorToWheel(draft,id,ai,wi))return;selectedSensor='';markDirty();renderAssignments();renderSensorPalettes();}
+async function recognizeResearch(row){await loadTpms();const d=tpmsData.devices.find(d=>d.address===row.address&&d.code===row.tpms?.code);if(d)await bindInstrument(d.id);else opState(T('Ожидается пакет'),'error');}
+async function loadTpms(){if(tpmsLoading)return;tpmsLoading=true;try{tpmsData=await api('/api/tpms');tpmsAt=performance.now();renderSensorPalettes();renderKnownDevices();renderVehicleCanvas();renderHomeVehicle();}catch(e){opState(e.message,'error');}finally{tpmsLoading=false;}}
+for(const b of document.querySelectorAll('[data-search]'))b.onclick=async()=>{try{await api('/api/tpms/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:b.dataset.search==='start'})});await loadTpms();}catch(e){opState(e.message,'error');}};
+for(const b of document.querySelectorAll('[data-clear-sensor]'))b.onclick=()=>{selectedSensor='';renderSensorPalettes();renderVehicleCanvas();};
+document.addEventListener('tpms-select',e=>{if(!e.detail.id||e.target.closest('#homeVehicleCanvas'))return;const slot=e.target.closest('.wheel-drop');if(slot&&selectedSensor&&selectedSensor!==e.detail.id){assignInstrument(selectedSensor,Number(slot.dataset.axle),Number(slot.dataset.wheel));return;}selectedSensor=selectedSensor===e.detail.id?'':e.detail.id;renderSensorPalettes();renderVehicleCanvas();});
+let dragId='',touchDrag=null,ignoreSensorClickUntil=0;
+const dropSlot=target=>target?.closest?.('.wheel-drop');
+function highlightSlot(slot){for(const e of document.querySelectorAll('.wheel-drop.drop-hover'))if(e!==slot)e.classList.remove('drop-hover');slot?.classList.add('drop-hover');}
+document.addEventListener('dragstart',e=>{const tile=e.target.closest('tpms-sensor');if(!tile||tile.model.readOnly)return;dragId=tile.model.id;e.dataTransfer.setData('application/x-tpms-id',dragId);e.dataTransfer.effectAllowed='move';});
+$('vehicleCanvas').addEventListener('dragover',e=>{if(dragId){e.preventDefault();e.dataTransfer.dropEffect='move';highlightSlot(dropSlot(e.target));}});
+$('vehicleCanvas').addEventListener('drop',e=>{const slot=dropSlot(e.target);if(slot&&dragId){e.preventDefault();assignInstrument(dragId,Number(slot.dataset.axle),Number(slot.dataset.wheel));}highlightSlot(null);dragId='';});
+document.addEventListener('dragend',()=>{dragId='';highlightSlot(null);});
+function clearTouchDrag(){if(!touchDrag)return;clearTimeout(touchDrag.timer);touchDrag.ghost?.remove();touchDrag=null;highlightSlot(null);}
+document.addEventListener('touchstart',e=>{const tile=e.target.closest('tpms-sensor');if(!tile||tile.model.readOnly||e.touches.length!==1)return;const t=e.touches[0];touchDrag={tile,id:tile.model.id,x:t.clientX,y:t.clientY,active:false,ghost:null,timer:null};touchDrag.timer=setTimeout(()=>{if(!touchDrag)return;touchDrag.active=true;const ghost=document.createElement('tpms-sensor');ghost.className='sensor-drag-ghost';ghost.setAttribute('aria-hidden','true');ghost.inert=true;document.body.append(ghost);ghost.model={...tile.model,selected:true};ghost.style.left=(touchDrag.x-38)+'px';ghost.style.top=(touchDrag.y-75)+'px';touchDrag.ghost=ghost;},350);},{passive:true});
+document.addEventListener('touchmove',e=>{if(!touchDrag)return;if(e.touches.length!==1){clearTouchDrag();return;}const t=e.touches[0];if(!touchDrag.active){if(Math.hypot(t.clientX-touchDrag.x,t.clientY-touchDrag.y)>8)clearTouchDrag();return;}e.preventDefault();touchDrag.ghost.style.left=(t.clientX-38)+'px';touchDrag.ghost.style.top=(t.clientY-75)+'px';highlightSlot(dropSlot(document.elementFromPoint(t.clientX,t.clientY)));},{passive:false});
+document.addEventListener('touchend',e=>{if(!touchDrag)return;const d=touchDrag;if(d.active){e.preventDefault();ignoreSensorClickUntil=performance.now()+500;const t=e.changedTouches[0],slot=dropSlot(document.elementFromPoint(t.clientX,t.clientY));if(slot)assignInstrument(d.id,Number(slot.dataset.axle),Number(slot.dataset.wheel));}clearTouchDrag();},{passive:false});
+document.addEventListener('touchcancel',clearTouchDrag);
+document.addEventListener('click',e=>{if(performance.now()<ignoreSensorClickUntil&&e.target.closest('tpms-sensor')){e.preventDefault();e.stopImmediatePropagation();}},true);
+document.addEventListener('contextmenu',e=>{if(e.target.closest('tpms-sensor'))e.preventDefault();});
+setInterval(()=>{for(const tile of document.querySelectorAll('tpms-sensor:not(.sensor-drag-ghost)')){const d=instrument(tile.model?.id);if(d){const readOnly=!!tile.model.readOnly;tile.model={...sensorModel(d),readOnly,hideAge:readOnly,selected:!readOnly&&selectedSensor===d.id};}}renderHomeVehicle();},1000);
+help.identify=['Начните поиск до изменения давления. База — последнее измерение в начале сеанса, либо первый пришедший пакет. При суммарном изменении от базы не менее 0,10 bar компонент меняет цвет до сброса поиска. Это признак изменения, положение колеса выбирает пользователь. Перетащите компонент на колесо и сохраните машину. На телефоне можно выбрать датчик касанием, затем коснуться колеса; для перетаскивания удерживайте компонент. Давность показывает, когда реально приходил пакет.','Start before changing pressure. The baseline is the last reading at session start or the first received packet. A cumulative change of at least 0.10 bar marks the component until reset. This marks a change; the user chooses wheel position. Drag onto a wheel and save the vehicle. On touch screens select a sensor then a wheel, or hold to drag. Age indicates the actual last packet.'];
+help.garage=['Идентичность датчика неизменна и приходит из обнаружения. Названия осей и колёс принадлежат машине. Выберите или перетащите датчик на колесо, затем сохраните машину. Перемещение между занятыми местами меняет датчики местами; при переносе на пустое место прежнее освобождается. Изменить число осей и колёс можно в «Оси и колёса».','Sensor identity comes from discovery and is immutable. Axle and wheel names belong to the vehicle. Select or drag a sensor to a wheel, then save the vehicle. Moving between occupied positions swaps their sensors; moving to an empty position clears the source. Edit geometry under Axles and wheels.'];
+
+localize();loadTpms();page=pages.some(x=>x[0]===location.hash.slice(1))?location.hash.slice(1):'home';setPageVisible();loadSettings(true);loadState();connect();if(page==='files')loadFiles();
+
+</script><script type="module">
+// Shared TechnicalShell tooltip behavior. Text only; no HTML from application data.
+const selector = '[data-tooltip]';
+const tooltip = document.createElement('div');
+// DOM identity only: randomUUID is unavailable on ordinary intranet HTTP.
+let tooltipIndex = 0;
+do { tooltip.id = `lu-tooltip-${++tooltipIndex}`; } while (document.getElementById(tooltip.id));
+tooltip.className = 'lu-tooltip';
+tooltip.setAttribute('role', 'tooltip');
+tooltip.setAttribute('popover', 'manual');
+tooltip.hidden = true;
+let active, hovered, focused, showTimer, hideTimer, frame;
+let pointer;
+let dismissed;
+let keyboardMode=false;
+const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
+const overlaps = (a, b) => a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+const source = target => target instanceof Element ? target.closest(selector) : null;
+const popupTarget = target => target instanceof Node && tooltip.contains(target);
+const enabled = element => element?.closest('.lu-shell')?.dataset.tooltips !== 'false';
+
+function decorate(root) {
+    const elements = root instanceof Element && root.matches(selector) ? [root] : [];
+    if (root.querySelectorAll) elements.push(...root.querySelectorAll(selector));
+    for (const element of elements) {
+        if (!element.matches('a[href],button,input,select,textarea,summary,[tabindex]') &&
+            !element.querySelector('button,input,select,textarea,a[href]')) element.setAttribute('tabindex', '0');
+    }
+}
+function unlink() {
+    if (!active) return;
+    const ids = (active.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== tooltip.id);
+    if (ids.length) active.setAttribute('aria-describedby', ids.join(' '));
+    else active.removeAttribute('aria-describedby');
+}
+function hide() {
+    clearTimeout(showTimer); clearTimeout(hideTimer);
+    unlink(); active = null;
+    if (tooltip.matches(':popover-open')) tooltip.hidePopover();
+    tooltip.hidden = true;
+}
+function position(reduced=false) {
+    if (!active?.isConnected || !active.getClientRects().length) { hide(); return; }
+    const r = active.getBoundingClientRect();
+    const margin = 12, gap = 32;
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+    const centerX = clamp(r.left+(r.width-w)/2, margin, vw-w-margin);
+    const centerY = clamp(r.top+(r.height-h)/2, margin, vh-h-margin);
+    // Reserve space for a large cursor extending down and right from its hotspot.
+    const cursor = pointer && hovered === active ? { x:pointer.x-24, y:pointer.y-24, w:152, h:152 } : null;
+    const below = cursor ? Math.max(r.bottom+gap, cursor.y+cursor.h+margin) : r.bottom+gap;
+    const right = cursor ? Math.max(r.right+gap, cursor.x+cursor.w+margin) : r.right+gap;
+    const candidates = [
+        {x:centerX, y:r.top-gap-h, side:'top'},
+        {x:centerX, y:below, side:'bottom'},
+        {x:r.left-gap-w, y:centerY, side:'left'},
+        {x:right, y:centerY, side:'right'}
+    ];
+    const fits = p => p.x>=margin && p.y>=margin && p.x+w<=vw-margin && p.y+h<=vh-margin;
+    let best = candidates.find(p => fits(p) && (!cursor || !overlaps({...p,w,h}, cursor)));
+    if (!best) {
+        // At a viewport corner a very long help text may need an internally scrolling box.
+        const room = [{x:margin,y:margin,side:'corner'}, {x:vw-w-margin,y:margin,side:'corner'},
+            {x:margin,y:vh-h-margin,side:'corner'}, {x:vw-w-margin,y:vh-h-margin,side:'corner'}];
+        best = room.find(p=>!cursor || !overlaps({...p,w,h},cursor));
+        if (!best && cursor && !reduced) {
+            const available = Math.max(cursor.y-margin, vh-cursor.y-cursor.h-margin);
+            if (available >= 80 && h > available) {
+                tooltip.style.maxHeight = `${Math.floor(available)}px`;
+                position(true); return;
+            }
+        }
+        best ||= candidates[0];
+    }
+    tooltip.style.left = `${clamp(best.x, margin, vw-w-margin)}px`;
+    tooltip.style.top = `${clamp(best.y, margin, vh-h-margin)}px`;
+    tooltip.dataset.side = best.side;
+}
+function show(element) {
+    if (!element?.isConnected || element === dismissed || !enabled(element)) { hide(); return; }
+    const dialog = document.querySelector('dialog[open]');
+    if (dialog && !dialog.contains(element)) { hide(); return; }
+    const text = element.getAttribute('data-tooltip')?.trim();
+    if (!text) { hide(); return; }
+    const parent = element.closest('dialog[open]') || element.closest('.lu-shell') || document.body;
+    if (tooltip.parentNode !== parent) { hide(); parent.append(tooltip); }
+    const reanchor = active !== element;
+    if (reanchor) { unlink(); active = element; }
+    tooltip.textContent = text;
+    tooltip.style.maxHeight = '';
+    const ids = new Set((element.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+    ids.add(tooltip.id); element.setAttribute('aria-describedby', [...ids].join(' '));
+    tooltip.hidden = false;
+    if (!tooltip.matches(':popover-open')) tooltip.showPopover();
+    if (reanchor || !tooltip.matches(':hover')) position();
+}
+function schedule(element, delay=250) {
+    clearTimeout(showTimer); clearTimeout(hideTimer);
+    if (!element || !enabled(element)) { hide(); return; }
+    if (active === element) return;
+    showTimer = setTimeout(()=>show(element), delay);
+}
+function leave() {
+    clearTimeout(showTimer); clearTimeout(hideTimer);
+    hideTimer = setTimeout(()=>{
+        if (popupTarget(document.elementFromPoint(pointer?.x ?? -1,pointer?.y ?? -1))) return;
+        if (focused?.isConnected) show(focused); else hide();
+    }, 300);
+}
+document.addEventListener('pointerover', event=>{
+    if (event.pointerType === 'touch') return;
+    pointer = {x:event.clientX,y:event.clientY};
+    if (popupTarget(event.target)) { clearTimeout(hideTimer); return; }
+    const element = source(event.target);
+    if (element !== hovered) { dismissed = null; hovered = element; schedule(element); }
+});
+document.addEventListener('pointermove', event=>{
+    if (event.pointerType === 'touch') return;
+    pointer = {x:event.clientX,y:event.clientY};
+    if (popupTarget(event.target)) return;
+    if (active && hovered === active && !frame) frame=requestAnimationFrame(()=>{
+        frame=null;
+        if (!active) return;
+        const r=tooltip.getBoundingClientRect();
+        if (overlaps({x:r.left,y:r.top,w:r.width,h:r.height},{x:pointer.x-24,y:pointer.y-24,w:152,h:152})) position();
+    });
+});
+document.addEventListener('pointerout', event=>{
+    if (popupTarget(event.relatedTarget)) { clearTimeout(hideTimer); return; }
+    const next = source(event.relatedTarget);
+    if (next === hovered && !popupTarget(event.target)) return;
+    hovered = next;
+    if (next) schedule(next); else leave();
+});
+document.addEventListener('focusin', event=>{
+    focused = keyboardMode ? source(event.target) : null; dismissed = null;
+    if (focused) { clearTimeout(showTimer); clearTimeout(hideTimer); show(focused); }
+});
+document.addEventListener('focusout', event=>{
+    focused = source(event.relatedTarget);
+    if (!focused && !hovered && !popupTarget(event.relatedTarget)) hide();
+});
+document.addEventListener('keydown', event=>{
+    if(!['Shift','Control','Alt','Meta'].includes(event.key))keyboardMode=true;
+    if (event.key === 'Escape' && active) {
+        dismissed=active; hide(); event.preventDefault(); event.stopPropagation();
+    }
+}, true);
+document.addEventListener('pointerdown', event=>{ keyboardMode=false;focused=null;if(!popupTarget(event.target)){dismissed=source(event.target);hide();} },true);
+document.addEventListener('scroll', event=>{ if (!popupTarget(event.target)) { dismissed=active; hide(); } },true);
+document.addEventListener('close', hide,true);
+window.addEventListener('resize', hide);
+window.addEventListener('blur', hide);
+const observer = new MutationObserver(records=>{
+    for (const record of records) {
+        if (record.type === 'childList') for (const node of record.addedNodes) decorate(node);
+        if (record.type === 'attributes') decorate(record.target);
+    }
+    if (active) {
+        const dialog=document.querySelector('dialog[open]');
+        if (!active.isConnected || !enabled(active) || (dialog && !dialog.contains(active))) hide();
+        else if (tooltip.textContent !== active.getAttribute('data-tooltip')?.trim()) show(active);
+    }
+});
+decorate(document);
+observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-tooltip','data-tooltips','open']});
+
+</script></body></html>

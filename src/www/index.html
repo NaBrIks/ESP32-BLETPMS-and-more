@@ -1,0 +1,124 @@
+<html>
+<meta charset="UTF-8">
+<title>SSE Client</title>
+
+<head>
+    <link rel='stylesheet' href='css.css' type='text/css'>
+</head>
+
+<body>
+    It's body! Hello, ESP32 Web Server!
+
+    <div class="container">
+        <div class="column">
+            <div id="messages">
+                <input type="text" id="input1" placeholder="Введите сообщение">
+                <button onclick="sendMessage(1)">Отправить</button>
+                <h2>Messages:</h2>
+                <ul id="messageList1">
+                    <!-- Сообщения будут отображаться здесь -->
+                </ul>
+            </div>
+
+        </div>
+        <div class="column">
+            <div id="messages">
+                <input type="text" id="input2" placeholder="Введите сообщение">
+                <button onclick="sendMessage(2)">Отправить</button>
+                <h2>Messages:</h2>
+                <div id="test_id"></div>
+                <ul id="messageList2">
+                    <!-- Сообщения будут отображаться здесь -->
+                </ul>
+            </div>
+        </div>
+        <div class="column">
+            <div id="output"></div>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        const origin = window.location.origin;
+        const host = window.location.host;
+
+        const eventSource = new EventSource(origin + '/events');
+        eventSource.onmessage = (e) => {
+            console.log(e.data);
+            const line = document.createElement('p'); line.textContent = e.data;
+            const output = document.getElementById('output'); output.appendChild(line);
+            while (output.children.length > 100) output.firstElementChild.remove();
+        };
+
+        eventSource.onerror = function () { console.error("SSE connection lost"); };
+
+        // WS -----------------------------------------
+
+        // Подключение к WebSocket-серверу
+        const socket1 = new WebSocket('ws://' + host + '/ws'); // Укажите IP вашего WebSocket-сервера
+        const socket2 = new WebSocket('ws://' + host + '/ws'); // Укажите IP вашего WebSocket-сервера
+
+        socket1.onopen = function () { outMessage('Соединение с сервером установлено', '', 'messageList1'); };
+        socket1.onmessage = function (event) { outMessage('Получено сообщение', event.data, 'messageList1'); };
+        socket1.onerror = function (error) { outMessage('Ошибка WebSocket', error, 'messageList1'); };
+        socket1.onclose = function (event) { outMessage('Соединение закрыто', '', 'messageList1'); };
+
+        socket2.onopen = function () { outMessage('Соединение с сервером установлено', '', 'messageList2'); };
+        socket2.onmessage = function (event) { outMessage2(event); };
+        socket2.onerror = function (error) { outMessage('Ошибка WebSocket', error, 'messageList2'); };
+        socket2.onclose = function (event) { outMessage('Соединение закрыто', '', 'messageList2'); };
+
+
+
+        function sendMessage(x) {
+            switch (x) {
+                case 1: sendMessage2('input1', 'messageList1', socket1); break;
+                case 2: sendMessage2('input2', 'messageList2', socket2); break;
+            }
+        }
+
+        function sendMessage2(inpitKey, listKey, socket) {
+            const message = document.getElementById(inpitKey).value;
+            if (message && socket.readyState === WebSocket.OPEN) {
+                socket.send(message);
+                displayMessage('Отправлено: ' + message, listKey);
+            } else {
+                alert('WebSocket соединение не установлено или сообщение пустое');
+            }
+            document.getElementById(inpitKey).value = ''; // Очистка поля ввода
+        }
+
+        function outMessage(msg, data, listKey) {
+            console.log(msg + ':', data);
+            displayMessage(msg + ':' + data, listKey);
+        }
+
+        function displayMessage(msg, listKey) {
+            const messageList = document.getElementById(listKey);
+            const li = document.createElement('li');
+            li.textContent = msg;
+            messageList.appendChild(li);
+            while (messageList.children.length > 100) messageList.firstElementChild.remove();
+        }
+
+        function outMessage2(event) {
+            const data = JSON.parse(event.data);
+            if (data.msgType === 'snapshot') {
+                document.getElementById('test_id').textContent = `mainTick ${data.mainTick} / webTick ${data.webTick} / ${data.ip}`;
+                return;
+            }
+            switch (data.msgType) {
+                case 'webTick':
+                    const test_id = document.getElementById('test_id');
+                    test_id.innerText = data.id;
+                    break;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

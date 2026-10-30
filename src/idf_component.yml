@@ -1,0 +1,5 @@
+dependencies:
+  espressif/cbor: "0.6.1~4"
+  lvgl/lvgl: "9.6.0"
+  espressif/esp_lcd_touch: "1.2.1"
+  espressif/esp_lcd_touch_gt911: "1.1.3"

@@ -1,0 +1,5 @@
+# Independent 8 MiB board profile; never apply to the shared LCD7 implicitly.
+nvs, data, nvs, 0x9000, 0x6000,
+phy_init, data, phy, 0xf000, 0x1000,
+factory, app, factory, 0x10000, 0x300000,
+project, data, spiffs, 0x400000, 0x400000,

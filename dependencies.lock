@@ -1,0 +1,79 @@
+dependencies:
+  espressif/cbor:
+    component_hash: dad9ca860963e930366510a10b422b3125a4fb27b979712ed65efcbcd742de50
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.6.1~4
+  espressif/esp_lcd_touch:
+    component_hash: 3f85a7d95af876f1a6ecca8eb90a81614890d0f03a038390804e5a77e2caf862
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.2.1
+  espressif/esp_lcd_touch_gt911:
+    component_hash: acc1c184358aa29ef72506f618c9c76a8cc2bf12af38a2bff3d44d84f3a08857
+    dependencies:
+    - name: espressif/esp_lcd_touch
+      registry_url: https://components.espressif.com
+      require: public
+      version: ^1.1.0
+    - name: idf
+      require: private
+      version: '>=4.4.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.1.3
+  idf:
+    source:
+      type: idf
+    version: 5.5.6
+  lvgl/lvgl:
+    component_hash: d5e723db3a3feca71e34e333a6598b7624e3822577d374e1d44f0e18374952e1
+    dependencies:
+    - name: espressif/freetype
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: idf_version >=5.5 && $CONFIG{LV_USE_FREETYPE} == True
+      version: ^2.14.3
+    - name: espressif/libjpeg-turbo
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: idf_version >=5.5 && $CONFIG{LV_USE_LIBJPEG_TURBO} == True
+      version: ^3.1.1
+    - name: espressif/libpng
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: idf_version >=5.5 && $CONFIG{LV_USE_LIBPNG} == True
+      version: ^1.6.58
+    - name: espressif/lz4
+      registry_url: https://components.espressif.com
+      require: private
+      rules:
+      - if: idf_version >=5.5 && $CONFIG{LV_USE_LZ4} == True && $CONFIG{LV_USE_LZ4_INTERNAL} == False
+      version: ^1.10.0
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 9.6.0
+direct_dependencies:
+- espressif/cbor
+- espressif/esp_lcd_touch
+- espressif/esp_lcd_touch_gt911
+- idf
+- lvgl/lvgl
+manifest_hash: 6cab6d8b51a12e3a062abd9af0e7de166450737c7bdef50f83206982064c28bb
+target: esp32s3
+version: 2.0.0
