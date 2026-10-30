@@ -12,8 +12,9 @@ assignments and board integration live here. There are no local library copies.
 Place the three library checkouts next to this repository as `../NaBTools`,
 `../NaCBORUIforLVGL` and `../NaWServer`. The current application requires
 NaBTools advertisement classification and the `EspIdfScanTiming` /
-`set_scan_timing` API; an older library HEAD is insufficient. Publication and
-verification of matching library revisions are in progress.
+`set_scan_timing` API; an older library HEAD is insufficient. Published repository
+URLs, pinned revisions and fresh-checkout commands are in
+[the repository build baseline](docs/dependencies.md).
 
 The build uses PlatformIO Espressif32 8.0.0, ESP-IDF 5.5.6 and pinned toolchains.
 `platformio.ini` expects the SDK in the PlatformIO package directory as

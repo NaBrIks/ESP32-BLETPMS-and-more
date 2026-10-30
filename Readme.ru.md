@@ -2,7 +2,7 @@
 
 [English](Readme.md) | Русский
 
-Прикладной TPMS-приёмник на трёх самостоятельных публичных библиотеках: NaBTools (Bluetooth), NaCBORUIforLVGL (CBOR-интерфейс) и NaWServer (HTTP/WS/SSE). Локальных копий библиотек в `lib` нет. См. [архитектуру](docs/architecture.md), [хранилище](docs/storage.md) и [происхождение исходников](PROVENANCE.md).
+Прикладной TPMS-приёмник на трёх самостоятельных переиспользуемых библиотеках: NaBTools (Bluetooth), NaCBORUIforLVGL (CBOR-интерфейс) и NaWServer (HTTP/WS/SSE). Локальных копий библиотек в `lib` нет. См. [архитектуру](docs/architecture.md), [хранилище](docs/storage.md) и [происхождение исходников](PROVENANCE.md).
 
 ## Сборка
 
@@ -11,7 +11,10 @@
 В `platformio.ini` SDK ожидается в каталоге пакетов PlatformIO под именем
 `framework-espidf-v5.5.6`.
 
-Требуется актуальная рабочая версия NaBTools с классификацией рекламы и API `EspIdfScanTiming` / `set_scan_timing`. На момент этого снимка часть необходимых изменений NaBTools находится в отдельном локальном checkout и ещё не опубликована его коммитом; один лишь старый HEAD библиотеки недостаточен. Основной репозиторий не содержит копию этих изменений.
+Требуется NaBTools с классификацией рекламы и API `EspIdfScanTiming` / `set_scan_timing`.
+Необходимые изменения библиотек опубликованы в NaBrIks. Точные коммиты, адреса
+репозиториев и команды получения с нуля — в [описании сборки из репозиториев](docs/dependencies.md).
+Старый HEAD библиотеки недостаточен; локальных копий этих изменений в приложении нет.
 
 ```powershell
 node tools/encode-screen.mjs
