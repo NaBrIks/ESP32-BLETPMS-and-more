@@ -6,9 +6,9 @@ are not copied into this application. These published revisions form the
 
 | Checkout directory | Canonical repository | Default branch | Revision |
 | --- | --- | --- | --- |
-| `../NaBTools` | [NaBrIks/NaBTools](https://github.com/NaBrIks/NaBTools) | `main` | `e3e7b2c6f80b7086d45b7ed67b8122f2ff312354` |
+| `../NaBTools` | [NaBrIks/NaBTools](https://github.com/NaBrIks/NaBTools) | `main` | `d66a0e8d4465a8f94961814d6639993715d0e6b5` |
 | `../NaCBORUIforLVGL` | [NaBrIks/NaCBORUIforLVGL](https://github.com/NaBrIks/NaCBORUIforLVGL) | `master` | `7d5963b8c2b2170edacea6b8317e1d364de27cfc` |
-| `../NaWServer` | [NaBrIks/NaWServer](https://github.com/NaBrIks/NaWServer) | `main` | `117fadffc62a6c8b0b2a170d0a34125883707583` |
+| `../NaWServer` | [NaBrIks/NaWServer](https://github.com/NaBrIks/NaWServer) | `main` | `0d1492f174097a0cd51ddd668b4e1029c4ce4ec9` |
 
 The repositories currently retain their private visibility. GitHub access to
 them is required. NaWServer starts with one root commit; the other two libraries
@@ -21,9 +21,9 @@ From a fresh application checkout, create the sibling directories:
 git clone https://github.com/NaBrIks/NaBTools.git ../NaBTools
 git clone https://github.com/NaBrIks/NaCBORUIforLVGL.git ../NaCBORUIforLVGL
 git clone https://github.com/NaBrIks/NaWServer.git ../NaWServer
-git -C ../NaBTools checkout e3e7b2c6f80b7086d45b7ed67b8122f2ff312354
+git -C ../NaBTools checkout d66a0e8d4465a8f94961814d6639993715d0e6b5
 git -C ../NaCBORUIforLVGL checkout 7d5963b8c2b2170edacea6b8317e1d364de27cfc
-git -C ../NaWServer checkout 117fadffc62a6c8b0b2a170d0a34125883707583
+git -C ../NaWServer checkout 0d1492f174097a0cd51ddd668b4e1029c4ce4ec9
 npm --prefix ../NaCBORUIforLVGL ci
 node tools/encode-screen.mjs
 node tools/build-web.mjs
@@ -54,12 +54,17 @@ Wi-Fi/sensor headers were copied from the working checkouts. The installed
 ESP-IDF/toolchain packages were reused as build prerequisites.
 
 - Both generators reproduced the committed CBOR and web assets without changes.
-- `pio run -e s3-lcd7`: PASS; RAM 61,084 bytes, flash 2,563,477 bytes.
+- `pio run -e s3-lcd7`: PASS, including a final validation after the
+  checkout/formatter corrections. The compiled library sources match the clean
+  build; later changes are documentation, formatter wrappers and checkout policy.
 - Application native TPMS probe/discovery tests, with TomTom enabled and
   disabled, and wheel-assignment checks: PASS.
 - The application's 29 maintained C/C++ files pass Uncrustify Check; their
   lexical tokens and string contents match the pre-format version after
   excluding comments and whitespace.
+- Standard formatter commands are committed in all four projects. In new Windows
+  checkouts, their read-only checks pass without a preceding Apply; maintained
+  C/C++ uses LF regardless of `core.autocrlf`. Third-party material stays excluded.
 
 Local build logs and artifacts remain outside version control. Hardware
 acceptance of a different board profile is separate from this compilation check.
