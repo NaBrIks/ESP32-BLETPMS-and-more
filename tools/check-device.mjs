@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 import assert from 'node:assert/strict';
 import {decode} from '../../NaCBORUIforLVGL/node_modules/cborg/cborg.js';
 

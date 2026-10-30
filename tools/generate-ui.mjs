@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 import {readFile,writeFile} from 'node:fs/promises';
 import {encodeProject,decodeProject} from '../../NaCBORUIforLVGL/packages/project-codec/index.js';
 import {compileNativeAppearance} from './native-appearance.mjs';

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 import {readFile,writeFile} from 'node:fs/promises';
 const path=new URL('../src/www/',import.meta.url);
 const [head,app,tooltip,car,sensor,sensorUi,assignment,home]=await Promise.all(['shell-head.html','app.js','tooltip.inc.js','icons/car.svg','tpms-sensor.js','sensor-ui.js','wheel-assignment.js','icons/home.svg'].map(f=>readFile(new URL(f,path),'utf8')));

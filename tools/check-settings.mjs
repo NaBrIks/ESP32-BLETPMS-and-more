@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const base=process.argv[2];if(!base)throw Error('Usage: node tools/check-settings.mjs http://device:80');

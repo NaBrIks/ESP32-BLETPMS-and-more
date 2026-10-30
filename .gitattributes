@@ -1,0 +1,8 @@
+/src/** text eol=lf
+/tests/** text eol=lf
+/tools/** text eol=lf
+/agents/** text eol=lf
+/uncrustify.cfg text eol=lf
+*.md text eol=lf
+*.cmd text eol=crlf
+*.cbor binary

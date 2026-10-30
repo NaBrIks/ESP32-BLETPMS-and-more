@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 #pragma once
 #include "esp_err.h"
 #include "modules/application.hpp"

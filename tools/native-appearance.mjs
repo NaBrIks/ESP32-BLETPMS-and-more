@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
+// SPDX-License-Identifier: MIT
 import {readFile} from 'node:fs/promises';
 import {createProject,encodeProject} from '../../NaCBORUIforLVGL/packages/project-codec/index.js';
 import {roleStyles} from '../../NaCBORUIforLVGL/examples/windows_player/schemes.mjs';

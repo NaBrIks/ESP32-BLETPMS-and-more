@@ -1,9 +1,11 @@
 # Source provenance
 
-The application retains its GPL-3.0 license.
+Independently authored application code is MIT by the owner's decision of
+2026-10-30. Third-party and adapted materials retain their applicable licenses;
+see [LICENSES.md](LICENSES.md) for the exact scope and retained notices.
 
-- `src/boards/lcd7/board.cpp` and `board.hpp` are adapted from the NaBTools research LCD7 example, which adapts NaCBORUIforLVGL's S3 style-lab board integration and the original NaWServer/ESP32-yaidfws touch_lcd7 example. GPL-3.0 notices and frame ownership are retained. These are application board adapters, not copies of library runtimes.
-- `src/ui/project.json` adapts the four-sensor TPMS screen and styles from `NaCBORUIforLVGL/examples/s3_style_lab/project/demo.mjs`. Demonstration values and unrelated GPS components are removed; application-owned data sources drive the existing widgets through generic bindings. A compact variant uses the same document model.
+- `src/boards/lcd7/board.cpp` and `board.hpp` are adapted from the NaBTools research LCD7 example, which adapts NaCBORUIforLVGL's S3 style-lab board integration and the original NaWServer touch_lcd7 example. Those project-owned adaptations are now MIT by the owner's explicit choice. Referenced reset/init portions of the original [Waveshare/Espressif C source](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-7/blob/b30c6be50d3d60b9426f84439cd368fe0499dbeb/examples/ESP-IDF/08_lvgl_v8_demo/components/waveshare_rgb_lcd_port.c) retain CC0-1.0 and the 2022 Espressif notice; the manufacturer's repository-level Apache license is not substituted for that per-file notice. These are application board adapters, not copies of library runtimes. Frame ownership remains unchanged.
+- `src/ui/project.json` adapts the four-sensor TPMS screen and styles from `NaCBORUIforLVGL/examples/s3_style_lab/project/demo.mjs`, whose project-owned code is MIT under the same owner decision. Demonstration values and unrelated GPS components are removed; application-owned data sources drive the existing widgets through generic bindings. A compact variant uses the same document model.
 - The LilyGO board adapter preserves the original project's GPIO map, panel timing and ST7789 command sequence. DMA completion now controls LVGL buffer reuse.
 - Bluetooth SIG data, protocol parsing and device drivers belong to NaBTools. The old application submodule and local implementation are retired.
 - HTTP/WebSocket/SSE mechanisms belong to NaWServer. No local server implementation or compatibility container is maintained here.
