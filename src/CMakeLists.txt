@@ -1,5 +1,5 @@
 if(CMAKE_BUILD_EARLY_EXPANSION)
-    idf_component_register(PRIV_REQUIRES NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
+    idf_component_register(PRIV_REQUIRES NaWFstore NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
         esp_event esp_netif nvs_flash esp_timer driver spiffs json espressif__cbor espressif__esp_lcd_touch espressif__esp_lcd_touch_gt911)
     return()
 endif()
@@ -20,7 +20,7 @@ idf_component_register(
     SRCS main.cpp modules/composition_root.cpp modules/settings.cpp modules/tpms.cpp modules/ble/ble.cpp
          modules/wifi/wifi.cpp modules/web/web.cpp modules/diagnostic/diagnostic.cpp ${display_sources}
     INCLUDE_DIRS . "${appearance_dir}"
-    PRIV_REQUIRES NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
+    PRIV_REQUIRES NaWFstore NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
                   esp_event esp_netif nvs_flash esp_timer driver spiffs json espressif__cbor ${display_requirements}
     EMBED_TXTFILES www/index.html www/ble.html www/css.css
     EMBED_FILES ui/project.cbor ui/appearance.cbor)

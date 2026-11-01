@@ -435,7 +435,7 @@ namespace application
 		journal(lvgl_cbor::data_value_json(Value::Object{{"event", "ble-scan-configuration"},
 				{"timeMs", esp_timer_get_time() / 1000}, {"intervalMs", state.settings.ble_interval_ms},
 				{"windowMs", state.settings.ble_window_ms},
-				{"duplicates", false}, {"wifi", wifi_status()}}));
+				{"duplicates", false}, {"wifi", wifi_diagnostics()}}));
 		// Recognizers enrich research only; their observe() never auto-admits
 		// devices.
 		engine->add_module(std::make_unique<SmartTagModule>());
@@ -474,7 +474,7 @@ namespace application
 			journal(lvgl_cbor::data_value_json(Value::Object{{"event", "ble-scan-timing-requested"},
 					{"timeMs", esp_timer_get_time() / 1000}, {"intervalMs", configured_interval},
 					{"windowMs", configured_window},
-					{"result", name(result)}, {"wifi", wifi_status()}}));
+					{"result", name(result)}, {"wifi", wifi_diagnostics()}}));
 		}
 
 		int mode = wanted_mode.exchange(-1);
@@ -492,7 +492,7 @@ namespace application
 			logged_interval = actual_timing.interval; logged_window = actual_timing.window;
 			journal(lvgl_cbor::data_value_json(Value::Object{{"event", "ble-scan-timing-applied"},
 					{"timeMs", esp_timer_get_time() / 1000}, {"intervalMs", actual_timing.interval * 5 / 8},
-					{"windowMs", actual_timing.window * 5 / 8}, {"wifi", wifi_status()}}));
+					{"windowMs", actual_timing.window * 5 / 8}, {"wifi", wifi_diagnostics()}}));
 		}
 
 		state.reports = backend.reports;
@@ -558,7 +558,7 @@ namespace application
 						{"scan", name(backend.state)},
 						{"scanMode", name(backend.scan_mode)},
 						{"backendError", backend.error},
-						{"wifi", wifi_status()},
+						{"wifi", wifi_diagnostics()},
 						{"scanIntervalMs", actual_timing.interval * 5 / 8},
 						{"scanWindowMs", actual_timing.window * 5 / 8},
 						{"tomtomCandidates", tomtom_research->candidates},

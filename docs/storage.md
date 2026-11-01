@@ -4,6 +4,8 @@ MAIN owns the filesystem mount and application policy. On the shared 16 MiB S3, 
 
 Never format on mount failure, erase NVS, upload a complete filesystem image or wildcard-clean the shared volume. A failed mount leaves the application running with explicit storage failure and private compile-time defaults; it does not authorize destructive recovery.
 
+Wi-Fi profiles are separate from this filesystem contract. NaWFstore uses the existing `nvs` partition and only its `nawfstore` namespace, keys `cfg0` and `cfg1`. Each bounded binary blob starts with `NWF1`, followed by a little-endian generation, startup policy, length-prefixed profiles and CRC32. Save writes the inactive key, commits and verifies readback before publishing; the previous generation remains. Invalid existing configurations are reported without replacing them with compiled defaults. Credentials are not encrypted by this serialization format; NVS encryption is a separate device configuration. NaWFstore never formats SPIFFS or erases NVS.
+
 | Namespace | Owner | Use |
 |---|---|---|
 | `tpms.cfg.0`, `tpms.cfg.1` | MAIN TPMS | Complete known-instrument registry, garage and wheel assignments |

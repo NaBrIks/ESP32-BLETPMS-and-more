@@ -33,9 +33,13 @@ Profiles: `s3-lcd7` (800×480), `lilygo-t-display-s3` (320×170) and
 flashing. Preserve NVS and the existing final 4 MiB project filesystem;
 do not erase flash or upload a replacement filesystem image.
 
-Private Wi-Fi settings may be supplied in ignored
-`src/modules/wifi/wifi_secret.hpp` using `WIFI_SSID` / `WIFI_PASS` and optional
-`WIFI_ALT_SSID` / `WIFI_ALT_PASS`. A first-boot sensor set may be supplied in
+Wi-Fi profiles are saved by [NaWFstore](lib/NaWFstore/README.md) in NVS and can
+be changed without reflashing: use `wifi help` on the 115200-baud console or
+the authenticated `/setup` page. The native Settings page has an `AP 5 min`
+button and shows the temporary access point's connection details. Private
+first-use defaults may be supplied in ignored `src/modules/wifi/wifi_secret.hpp`
+using `WIFI_SSID` / `WIFI_PASS` and optional `WIFI_ALT_SSID` / `WIFI_ALT_PASS`;
+they never overwrite an existing NVS configuration. A first-boot sensor set may be supplied in
 ignored `src/modules/static_sensors_secret.hpp`; see the adjacent example header.
 Firmware updates do not overwrite an existing persisted garage with that set.
 

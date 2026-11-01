@@ -4,10 +4,25 @@ if(APP_BOARD STREQUAL "lcd7" OR APP_BOARD STREQUAL "lilygo")
     set(SDKCONFIG_DEFAULTS "sdkconfig.defaults;sdkconfig.s3.defaults")
 endif()
 set(EXTRA_COMPONENT_DIRS
+    "${CMAKE_CURRENT_LIST_DIR}/lib/NaWFstore"
     "${CMAKE_CURRENT_LIST_DIR}/src"
     "${CMAKE_CURRENT_LIST_DIR}/../NaBTools"
     "${CMAKE_CURRENT_LIST_DIR}/../NaCBORUIforLVGL"
     "${CMAKE_CURRENT_LIST_DIR}/../NaWServer")
 set(LVGL_CBOR_PROJECT_SERVICE ON CACHE BOOL "Load the application UI project from firmware" FORCE)
+if("$ENV{IDF_COMPONENT_MANAGER}" STREQUAL "0")
+    # Explicit offline builds reuse the already provisioned managed components.
+    file(GLOB offline_component_files "${CMAKE_CURRENT_LIST_DIR}/managed_components/*/CMakeLists.txt")
+    foreach(component_file IN LISTS offline_component_files)
+        get_filename_component(component_dir "${component_file}" DIRECTORY)
+        list(APPEND EXTRA_COMPONENT_DIRS "${component_dir}")
+    endforeach()
+endif()
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(Auto_BLETPMS_ELM327)
+if("$ENV{IDF_COMPONENT_MANAGER}" STREQUAL "0")
+    # This dependency normally comes from the GT911 component manifest.
+    idf_component_get_property(gt911_lib espressif__esp_lcd_touch_gt911 COMPONENT_LIB)
+    idf_component_get_property(touch_lib espressif__esp_lcd_touch COMPONENT_LIB)
+    target_link_libraries(${gt911_lib} PUBLIC ${touch_lib})
+endif()

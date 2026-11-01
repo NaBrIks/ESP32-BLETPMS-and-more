@@ -17,6 +17,7 @@
 <section id="page-radio" class="workspace-page" hidden>
 <header class="page-header"><h1 data-i="Настройки"></h1><div class="toolbar"><button id="saveRadio" data-i="Сохранить"></button><button class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></header>
 <section class="panel radio-settings"><div class="table-scroll"><table><colgroup><col style="width:16%"><col style="width:18%"><col style="width:24%"><col style="width:42%"></colgroup><thead><tr><th></th><th data-i="Сейчас"></th><th data-i="При старте"></th><th data-i="Сеанс, с (0=∞)"></th></tr></thead><tbody><tr><th>Wi-Fi</th><td><input id="wifiEnabled" type="checkbox" role="switch" aria-label="Wi-Fi сейчас"></td><td><input id="wifiBoot" type="checkbox" aria-label="Wi-Fi при старте"></td><td><input id="wifiWindow" type="number" min="0" max="86400" step="1" required aria-label="Длительность Wi-Fi, с"></td></tr></tbody></table></div><footer class="bottom-controls mono"><span id="wifiStateText">—</span></footer></section>
+<section class="panel wifi-profiles"><header class="panel-header"><h2 data-i="Сети Wi-Fi"></h2><div class="toolbar"><button id="addWifi" data-i="Добавить"></button><button id="refreshWifi" class="icon-action" aria-label="Обновить">↻</button><button id="startAp">AP 5 min</button><button id="stopAp">AP off</button></div></header><div class="table-scroll" tabindex="0"><table><colgroup><col style="width:40%"><col style="width:14%"><col style="width:14%"><col style="width:32%"></colgroup><thead><tr><th>SSID</th><th data-i="Приоритет"></th><th data-i="Включён"></th><th data-i="Действия"></th></tr></thead><tbody id="wifiRows"></tbody></table></div><footer class="bottom-controls mono"><span id="apStateText">AP —</span></footer></section>
 <section class="panel radio-settings"><header class="panel-header"><h2>BLE</h2><span id="bleStateText" class="mono"></span></header><table><colgroup><col style="width:60%"><col style="width:40%"></colgroup><tbody><tr><th><label for="bleInterval" data-i="Интервал, мс"></label></th><td><input id="bleInterval" type="number" min="5" max="10000" step="5" required aria-label="Интервал BLE, мс"></td></tr><tr><th><label for="bleWindow" data-i="Окно приёма, мс"></label></th><td><input id="bleWindow" type="number" min="5" max="10000" step="5" required aria-label="Окно BLE, мс"></td></tr></tbody></table><footer class="bottom-controls mono"><span id="bleTiming">—</span><span data-i="BLE работает постоянно"></span></footer></section>
 <section class="panel radio-settings"><table><colgroup><col style="width:26%"><col style="width:74%"></colgroup><tbody><tr><th data-i="Экран ESP32"></th><td id="nativeThemes" class="scheme-buttons"></td></tr><tr><th data-i="Сайт"></th><td id="siteThemes" class="scheme-buttons"></td></tr></tbody></table></section>
 </section>
@@ -24,6 +25,7 @@
 <dialog id="details"><header class="dialog-header"><h2 id="detailTitle"></h2><button id="closeDetails" class="icon-action" aria-label="Закрыть">✕</button></header><pre id="detailText" tabindex="0"></pre></dialog>
 <dialog id="confirm"><header class="dialog-header"><h2 data-i="Подтверждение"></h2></header><div class="dialog-body"><p id="confirmText"></p><div class="inline"><button id="confirmYes" data-i="Продолжить"></button><button id="confirmNo" data-i="Отмена"></button></div></div></dialog>
 <dialog id="tagEditor"><header class="dialog-header"><h2 data-i="Теги датчика"></h2><button class="icon-action" data-close="tagEditor" aria-label="Закрыть">✕</button></header><form id="tagForm" class="dialog-body"><div id="tagIdentity" class="mono"></div><label class="tag-field"><span data-i="Теги через запятую"></span><input id="tagValues" maxlength="520" aria-label="Теги через запятую" autocomplete="off"></label><div class="inline"><button id="saveTags" type="submit" data-i="Сохранить"></button><button type="button" class="operation icon-action" data-operation aria-label="Результат операции">ⓘ</button></div></form></dialog>
+<dialog id="wifiEditor"><header class="dialog-header"><h2 data-i="Сеть Wi-Fi"></h2><button class="icon-action" data-close="wifiEditor" aria-label="Закрыть">✕</button></header><form id="wifiForm" class="dialog-body" autocomplete="off"><label class="tag-field"><span>SSID</span><input id="wifiSsid" maxlength="32" required autocomplete="off"></label><label class="tag-field"><span data-i="Пароль"></span><input id="wifiPassword" type="password" maxlength="64" autocomplete="new-password"></label><label class="tag-field"><span data-i="Заменить пароль"></span><input id="wifiReplacePassword" type="checkbox"></label><label class="tag-field"><span data-i="Приоритет"></span><input id="wifiPriority" type="number" min="0" max="255" step="1" required value="0"></label><label class="tag-field"><span data-i="Включён"></span><input id="wifiProfileEnabled" type="checkbox" checked></label><div class="inline"><button id="saveWifi" type="submit" data-i="Сохранить"></button><button class="operation icon-action" type="button" data-operation aria-label="Результат операции">ⓘ</button></div></form></dialog>
 <template id="icon-car"><svg
   xmlns="http://www.w3.org/2000/svg"
   width="24"
@@ -127,11 +129,56 @@ document.addEventListener('pointerup',endMenuGesture,{passive:false});
 document.addEventListener('pointercancel',()=>{gesture=null;app.classList.remove('menu-dragging');app.style.removeProperty('--drawer-x');});
 syncMenu();
 function setPageVisible(){for(const [id]of pages)$('page-'+id).hidden=id!==page;for(const a of $('navigation').querySelectorAll('a'))a.classList.toggle('active',a.hash==='#'+page);}
-async function switchPage(id){if(!pages.some(p=>p[0]===id))id='home';if(page==='garage'&&dirty&&id!=='garage'&&!await confirmAction('Отменить несохранённые правки?'))return;if(page==='garage'&&id!=='garage')dirty=false;page=id;location.hash=id;setPageVisible();if(narrow.matches)closeMenu(false);if(id==='files')loadFiles();if(id==='bt'||id==='tom')loadResearch();if(id==='garage')renderSettings(false);if(['home','known','garage','tom'].includes(id))loadTpms();}
+async function switchPage(id){if(!pages.some(p=>p[0]===id))id='home';if(page==='garage'&&dirty&&id!=='garage'&&!await confirmAction('Отменить несохранённые правки?'))return;if(page==='garage'&&id!=='garage')dirty=false;page=id;location.hash=id;setPageVisible();if(narrow.matches)closeMenu(false);if(id==='radio')loadWifi();if(id==='files')loadFiles();if(id==='bt'||id==='tom')loadResearch();if(id==='garage')renderSettings(false);if(['home','known','garage','tom'].includes(id))loadTpms();}
 window.addEventListener('hashchange',()=>{const id=location.hash.slice(1);if(id!==page)switchPage(id);});
 function tableRows(body,items,key,update){const existing=new Map([...body.children].map(r=>[r.dataset.key,r]));for(let i=0;i<items.length;i++){const item=items[i],k=String(key(item,i));let tr=existing.get(k);if(!tr){tr=document.createElement('tr');tr.dataset.key=k;}existing.delete(k);update(tr,item,i);if(body.children[i]!==tr)body.insertBefore(tr,body.children[i]||null);}for(const r of existing.values())r.remove();}
 function cell(tr,i,text,cls){while(tr.children.length<=i)tr.append(el('td'));const td=tr.children[i];if(text!=null&&td.textContent!==String(text))td.textContent=text;if(cls)td.className=cls;return td;}
 function age(last){return Math.max(0,Math.floor((Number(state.uptimeMs||0)+performance.now()-stateAt-Number(last||0))/1000));}
+let wifiConfig={profiles:[]},wifiEditing=0;
+Object.assign(translations,{'Сети Wi-Fi':'Wi-Fi networks','Сеть Wi-Fi':'Wi-Fi network','Пароль':'Password','Заменить пароль':'Replace password','Включён':'Enabled','Подключить':'Connect','Сохранено в NVS':'Saved to NVS','Операция принята':'Operation accepted','Слишком длинное имя сети':'SSID exceeds 32 bytes'});
+async function loadWifi(report=false){if(state.wifi?.webEnabled===false)return;try{wifiConfig=await api('/api/wifi/config');renderWifi();}catch(e){if(report)opState(e.message,'error');}}
+function renderWifi(){
+ tableRows($('wifiRows'),wifiConfig.profiles||[],p=>p.id,(tr,p)=>{
+  cell(tr,0,p.ssid);cell(tr,1,p.priority,'number');cell(tr,2,p.enabled?'✓':'—');
+  const edit=btn('✎',()=>editWifi(p),T('Редактировать'));edit.className='icon-action';
+  const connect=btn(T('Подключить'),()=>wifiPerform({op:'connect',id:p.id}));
+  const remove=btn('×',async()=>{if(await confirmAction(T('Удалить')+' '+p.ssid+'?'))wifiPerform({op:'remove',id:p.id});},T('Удалить'));remove.className='icon-action';
+  cell(tr,3).replaceChildren(edit,connect,remove);
+ });
+ if(!radioDirty){$('wifiBoot').checked=wifiConfig.startupEnabled??true;$('wifiWindow').value=wifiConfig.startupWindowSeconds??0;}
+}
+async function wifiPerform(command){
+ try{
+  const accepted=await api('/api/wifi/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(command)});
+  if(!accepted.accepted)throw Error(accepted.error||'wifi_command_failed');
+  opState(T('Операция принята'),'pending');
+  for(let i=0;i<40;i++){
+   await new Promise(r=>setTimeout(r,150));
+   const result=await api('/api/wifi/operation?id='+accepted.id);
+   if(result.state==='failed')throw Error(result.error||'wifi_command_failed');
+   if(result.state==='done'){opState('✓','ok');await loadWifi();loadState();return true;}
+  }
+  throw Error('wifi_operation_timeout');
+ }catch(e){opState(e.message,'error');return false;}
+}
+function editWifi(profile){
+ wifiEditing=profile?.id||0;$('wifiSsid').value=profile?.ssid||'';$('wifiPassword').value='';$('wifiPriority').value=profile?.priority??0;$('wifiProfileEnabled').checked=profile?.enabled??true;
+ $('wifiReplacePassword').checked=!profile;$('wifiReplacePassword').disabled=!profile;$('wifiPassword').disabled=!!profile;
+ $('wifiEditor').showModal();
+}
+$('wifiReplacePassword').onchange=()=>{$('wifiPassword').disabled=!$('wifiReplacePassword').checked;if($('wifiPassword').disabled)$('wifiPassword').value='';};
+$('addWifi').onclick=()=>editWifi(null);$('refreshWifi').onclick=()=>loadWifi(true);
+$('startAp').onclick=()=>wifiPerform({op:'ap.start',seconds:300});$('stopAp').onclick=()=>wifiPerform({op:'ap.stop'});
+$('wifiForm').onsubmit=async e=>{
+ e.preventDefault();if(!$('wifiForm').reportValidity())return;
+ if(new TextEncoder().encode($('wifiSsid').value).length>32){$('wifiSsid').classList.add('invalid');opState(T('Слишком длинное имя сети'),'error');return;}
+ const command={op:'put',id:wifiEditing,ssid:$('wifiSsid').value,priority:Number($('wifiPriority').value),enabled:$('wifiProfileEnabled').checked};
+ if($('wifiReplacePassword').checked)command.password=$('wifiPassword').value;
+ $('saveWifi').disabled=true;
+ try{if(await wifiPerform(command)){$('wifiEditor').close();$('wifiPassword').value='';}}finally{$('saveWifi').disabled=false;}
+};
+$('wifiEditor').addEventListener('close',()=>{$('wifiPassword').value='';});
+
 let radioDirty=false, radioPending=false;
 Object.assign(translations,{'Сеанс, с (0=∞)':'Session, s (0=∞)','Настройки':'Settings','Сейчас':'Now','При старте':'At startup','Длительность Wi-Fi, с':'Wi-Fi duration, s','Wi-Fi сейчас':'Wi-Fi now','Wi-Fi при старте':'Wi-Fi at startup','Выключен':'Off','Интервал, мс':'Interval, ms','Окно приёма, мс':'Scan window, ms','Интервал BLE, мс':'BLE interval, ms','Окно BLE, мс':'BLE window, ms','BLE работает постоянно':'BLE runs continuously','Экран ESP32':'ESP32 display','Сайт':'Website','Некорректные параметры радио':'Invalid radio parameters'});
 function renderRadio(){
@@ -139,6 +186,11 @@ function renderRadio(){
  if(!radioPending)$('wifiEnabled').checked=!!w?.enabled;
  $('wifiEnabled').disabled=!w||radioPending;
  $('wifiStateText').textContent='Wi-Fi '+(w?.enabled?(w.connected?'✓ ':'… ')+(w.remainingSeconds<0?'∞':w.remainingSeconds+' s'):T('Выключен'));
+ $('apStateText').textContent=w?.apActive?'AP '+(w.apSsid||'')+' · http://'+(w.apIp||'192.168.4.1')+':80/':'AP '+T('Выключен');
+ $('stopAp').disabled=!w?.apActive;
+ $('startAp').disabled=w?.apSupported===false;
+ $('addWifi').disabled=w?.webEnabled===false;
+ $('refreshWifi').disabled=w?.webEnabled===false;
  $('bleStateText').textContent=b?.state||'—';
  $('bleTiming').textContent=b?.intervalMs?b.windowMs+' / '+b.intervalMs+' ms · '+Math.round(b.windowMs*100/b.intervalMs)+'%'+(b.pending?' …':''):'—';
  for(const [host,selected] of [['nativeThemes',settings.nativeTheme||'cream'],['siteThemes',theme]])for(const button of $(host).children)button.setAttribute('aria-pressed',String(button.dataset.scheme===selected));
@@ -156,14 +208,15 @@ function renderSchemeButtons(){
 for(const id of ['wifiWindow','bleWindow','bleInterval','wifiBoot'])$(id).oninput=()=>{radioDirty=true;$(id).classList.remove('invalid');};
 $('wifiEnabled').onchange=async e=>{
  const enabled=e.target.checked;radioPending=true;renderRadio();
- try{await api('/api/wifi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled,seconds:settings.wifiWindowSeconds??0})});opState(enabled?'✓':T('Выключен'),'ok');}
+ try{await api('/api/wifi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled,seconds:wifiConfig.startupWindowSeconds??0})});opState(enabled?'✓':T('Выключен'),'ok');}
  catch(error){opState(error.message,'error');}
  finally{setTimeout(()=>{radioPending=false;loadState();},2500);}
 };
 $('saveRadio').onclick=async()=>{
  for(const id of ['wifiWindow','bleWindow','bleInterval'])if(!$(id).validity.valid || $(id).value===''){$(id).classList.add('invalid');opState(T('Некорректные параметры радио'),'error');return;}
  if(Number($('bleWindow').value)>Number($('bleInterval').value)){$('bleWindow').classList.add('invalid');opState(T('Некорректные параметры радио'),'error');return;}
- await perform({op:'radio.put',wifiEnabled:$('wifiBoot').checked,wifiWindowSeconds:Number($('wifiWindow').value),bleIntervalMs:Number($('bleInterval').value),bleWindowMs:Number($('bleWindow').value)},()=>radioDirty=false);
+ if(!await wifiPerform({op:'startup',enabled:$('wifiBoot').checked,seconds:Number($('wifiWindow').value)}))return;
+ await perform({op:'radio.put',wifiEnabled:settings.wifiEnabled??true,wifiWindowSeconds:settings.wifiWindowSeconds??0,bleIntervalMs:Number($('bleInterval').value),bleWindowMs:Number($('bleWindow').value)},()=>radioDirty=false);
 };
 function renderState(){
  renderRadio();
@@ -187,7 +240,7 @@ async function perform(command,onSuccess){if(busy)return false;busy=true;opState
  }catch(e){opState(T('Ошибка')+': '+e.message,'error');return false;}finally{busy=false;for(const b of document.querySelectorAll('#saveVehicle,#newVehicle'))b.disabled=false;}}
 for(const id of ['activeVehicle','homeActiveVehicle'])$(id).onchange=e=>perform({op:'vehicle.select',id:e.target.value});
 function renderSettings(force){
- if(!radioDirty || force){$('wifiWindow').value=settings.wifiWindowSeconds??0;$('bleWindow').value=settings.bleWindowMs??80;$('bleInterval').value=settings.bleIntervalMs??80;$('wifiBoot').checked=settings.wifiEnabled??true;radioDirty=false;}
+ if(!radioDirty || force){$('wifiWindow').value=wifiConfig.startupWindowSeconds??settings.wifiWindowSeconds??0;$('bleWindow').value=settings.bleWindowMs??80;$('bleInterval').value=settings.bleIntervalMs??80;$('wifiBoot').checked=wifiConfig.startupEnabled??settings.wifiEnabled??true;radioDirty=false;}
  for(const id of ['activeVehicle','homeActiveVehicle']){const active=$(id);active.replaceChildren();for(const c of settings.garage){const o=el('option',c.name);o.value=c.id;active.append(o);}active.value=settings.active;active.disabled=!settings.garage.length;}
  tableRows($('garageRows'),settings.garage,c=>c.id,(tr,c)=>{const td=cell(tr,0);td.replaceChildren(btn(c.name,async()=>{if(dirty&&!await confirmAction('Отменить несохранённые правки?'))return;draft=structuredClone(c);dirty=false;renderAssignments();}));cell(tr,1,c.axles.length+' / '+c.axles.reduce((n,a)=>n+a.wheels.length,0),'number');const star=btn(settings.active===c.id?'★':'☆',()=>makeDefaultVehicle(c.id));star.className='icon-action';star.setAttribute('aria-label',T('Показывать при включении')+' '+c.name);star.setAttribute('aria-pressed',String(settings.active===c.id));cell(tr,2).replaceChildren(star);tr.classList.toggle('selected-row',draft?.id===c.id);});
  if(!draft||force){draft=structuredClone(settings.garage.find(c=>c.id===settings.active)||settings.garage[0]||null);dirty=false;renderAssignments();}else if(!dirty){const c=settings.garage.find(c=>c.id===draft.id);if(c)draft=structuredClone(c);renderAssignments();}
@@ -217,7 +270,7 @@ const help={tpms:['Секунды с последнего пакета; изме
 for(const b of document.querySelectorAll('[data-help]'))b.onclick=()=>details(T('Подробности'),help[b.dataset.help][lang==='ru'?0:1]);
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 setInterval(()=>{let unix=Number(state.unixSeconds||0)+(performance.now()-stateAt)/1000;$('clock').textContent=unix>1700000000?new Date(unix*1000).toLocaleTimeString(lang==='ru'?'ru-RU':'en-GB',{hour12:false,timeZone:'Asia/Yekaterinburg'}):'--:--:--';for(const e of document.querySelectorAll('.age[data-last]'))e.textContent=e.dataset.last===''?'—':age(e.dataset.last);if(!connected)loadState();if(page==='tom'||page==='bt')loadResearch();if(['home','known','garage','tom'].includes(page))loadTpms();},1000);
-let tpmsData={devices:[],drivers:[],search:{}},tpmsAt=performance.now(),tpmsLoading=false,selectedSensor='',tagSensorId='';
+loadWifi();let tpmsData={devices:[],drivers:[],search:{}},tpmsAt=performance.now(),tpmsLoading=false,selectedSensor='',tagSensorId='';
 const instrument=id=>tpmsData.devices.find(d=>d.id===id)||(()=>{const k=settings.known.find(k=>k.id===id);return k?{...k,known:true,protocolId:k.protocolId||k.identity,observed:false}:null;})();
 function sensorModel(d){const ageSeconds=d.observed?Math.max(0,Math.floor((Number(tpmsData.uptimeMs||0)+performance.now()-tpmsAt-d.lastSeenMs)/1000)):null;const number=d.protocolId||d.id;const pressure=d.pressureBar==null?'— bar':fmt(d.pressureBar,2)+' bar';const tooltip=`${T('Системный ID')}: ${d.id}\n${T('ID протокола')}: ${number}\n${d.address||'—'}\nΔ ${d.deltaPa==null?'—':fmt(d.deltaPa/100000,2)} bar / max ${d.peakDeltaPa==null?'—':fmt(d.peakDeltaPa/100000,2)} bar`;
  const tags=settings.known.find(k=>k.id===d.id)?.tags||d.tags||[];
@@ -293,7 +346,7 @@ setInterval(()=>{for(const tile of document.querySelectorAll('tpms-sensor:not(.s
 help.identify=['Начните поиск до изменения давления. База — последнее измерение в начале сеанса, либо первый пришедший пакет. При суммарном изменении от базы не менее 0,10 bar компонент меняет цвет до сброса поиска. Это признак изменения, положение колеса выбирает пользователь. Перетащите компонент на колесо и сохраните машину. На телефоне можно выбрать датчик касанием, затем коснуться колеса; для перетаскивания удерживайте компонент. Давность показывает, когда реально приходил пакет.','Start before changing pressure. The baseline is the last reading at session start or the first received packet. A cumulative change of at least 0.10 bar marks the component until reset. This marks a change; the user chooses wheel position. Drag onto a wheel and save the vehicle. On touch screens select a sensor then a wheel, or hold to drag. Age indicates the actual last packet.'];
 help.garage=['Идентичность датчика неизменна и приходит из обнаружения. Названия осей и колёс принадлежат машине. Выберите или перетащите датчик на колесо, затем сохраните машину. Перемещение между занятыми местами меняет датчики местами; при переносе на пустое место прежнее освобождается. Изменить число осей и колёс можно в «Оси и колёса».','Sensor identity comes from discovery and is immutable. Axle and wheel names belong to the vehicle. Select or drag a sensor to a wheel, then save the vehicle. Moving between occupied positions swaps their sensors; moving to an empty position clears the source. Edit geometry under Axles and wheels.'];
 
-localize();loadTpms();page=pages.some(x=>x[0]===location.hash.slice(1))?location.hash.slice(1):'home';setPageVisible();loadSettings(true);loadState();connect();if(page==='files')loadFiles();
+localize();loadTpms();page=pages.some(x=>x[0]===location.hash.slice(1))?location.hash.slice(1):(location.pathname==='/setup'?'radio':'home');setPageVisible();loadSettings(true);loadState();connect();if(page==='files')loadFiles();
 
 </script><script type="module">
 // Shared TechnicalShell tooltip behavior. Text only; no HTML from application data.

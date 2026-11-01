@@ -203,6 +203,7 @@ void dashboard_init()
 			 {"clock", DataSchema::text(8)}})},
 		e);
 	data.add_source({"wifi", DataSchema::text(80)}, e);
+	data.add_source({"wifi.ap", DataSchema::text(192)}, e);
 	data.add_source({"ble.control", DataSchema::text(80)}, e);
 	data.add_source({"ble.interval", DataSchema::text(16)}, e);
 	data.add_source({"ble.window", DataSchema::text(16)}, e);
@@ -230,6 +231,9 @@ void dashboard_init()
 						 }}, e);
 	data.add_action({"wifi.open", DataSchema::integer(0, 86400), [](const DataValue &v, std::string &){
 						 return wifi_request(true, uint32_t(integer_value(v)));
+					 }}, e);
+	data.add_action({"wifi.ap.open", DataSchema::integer(1, 86400), [](const DataValue &v, std::string &){
+						 return wifi_ap_request(true, uint32_t(integer_value(v)));
 					 }}, e);
 	data.add_action({"wifi.close", DataSchema::integer(0, 0), [](const DataValue &, std::string &){
 						 return wifi_request(false, 0);
@@ -321,6 +325,7 @@ void dashboard_update(const application::State &state)
 	const auto remaining = integer_value(member(wireless, "remainingSeconds"));
 	data.publish("wifi", std::string("Wi-Fi ") + (enabled ? (online ? "online" : "searching") : "off") +
 	    (enabled && remaining >= 0 ? " / " + std::to_string(remaining) + " s" : ""), e);
+	data.publish("wifi.ap", wifi_ap_credentials(), e);
 	data.publish("ble.control", std::string("BLE: ") + state.scan + " / " +
 	    std::to_string(integer_value(member(state.ble, "windowMs"))) + " / " +
 	    std::to_string(integer_value(member(state.ble, "intervalMs"))) + " ms", e);
@@ -423,7 +428,8 @@ application::Value dashboard_status()
 bool dashboard_control(const std::string &id)
 {
 	if(id != "scheme-light" && id != "scheme-cream" && id != "scheme-emerald" && id != "scheme-dark" &&
-	    id != "scheme-night" && id != "wifi-open" && id != "wifi-close" && id != "interval-minus" &&
+	    id != "scheme-night" && id != "wifi-open" && id != "wifi-ap-open" && id != "wifi-close" &&
+	    id != "interval-minus" &&
 	    id != "interval-plus" && id != "window-minus" && id != "window-plus") return false;
 
 	std::lock_guard lock(control_mutex);
@@ -507,8 +513,21 @@ void dashboard_poll()
 			inspect(id, project->find(id));
 		for(const auto &view:status.views)
 			for(const char *id:{"pressure-0", "pressure-unit-0", "temp-0", "age-0", "tom-row-0", "bt-row-0",
-			                    "scheme-night", "scheme-cream"})
+			                    "scheme-night", "scheme-cream", "wifi-ap-open", "wifi-ap-info"})
 				inspect(id, project->find(view.page_instance, id));
+		// Local setup credentials must not enter the HTTP display registry snapshot.
+		DataValue registry;
+		std::string registry_error;
+		std::string public_registry = "{}";
+		if(application::parse_json(data.snapshot_json(), registry, registry_error))
+		{
+			auto &sources = std::get<DataValue::Array>(std::get<DataValue::Object>(registry.value)["sources"].value);
+			sources.erase(std::remove_if(sources.begin(), sources.end(), [](const DataValue &source) {
+				return application::string_value(member(source, "name")) == "wifi.ap";
+			}), sources.end());
+			public_registry = data_value_json(registry);
+		}
+
 		std::lock_guard l(debug_mutex);
 		ui_status = DataValue::Object{{"screen", status.displayed_screen},
 			{"scheme", appearance ? appearance->selected() : ""},
@@ -518,7 +537,7 @@ void dashboard_poll()
 			{"tabs", tabs},
 			{"paint", paint},
 			{"views", views},
-			{"registry", data.snapshot_json()}};
+			{"registry", public_registry}};
 #if APP_DISPLAY_WIDTH == 800
 		const auto refresh = display_refresh_stats();
 		std::get<DataValue::Object>(ui_status.value)["driver"] = DataValue::Object{

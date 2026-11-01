@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
 // SPDX-License-Identifier: MIT
 #include "web.hpp"
+#include <NaWFstore/NaWFstore.hpp>
 #include "modules/wifi/wifi.hpp"
 #include "modules/diagnostic/diagnostic.hpp"
 #include "modules/lcd/dashboard.hpp"
@@ -67,6 +68,13 @@ namespace
 		return static_text(r, ble_start, "text/html; charset=utf-8");
 		},
 		private_http, authenticated_http);
+#if NAWFSTORE_WITH_WEB
+	Route setup_page("/setup", HttpMethod::Get,
+	    +[](Response &r) {
+	    return static_text(r, ble_start, "text/html; charset=utf-8");
+		},
+	    private_http, authenticated_http);
+#endif
 	Route stylesheet(
 		"/css.css", HttpMethod::Get,
 		+[](Response &r) {
@@ -398,9 +406,44 @@ namespace
 		return json(r, Value::Object{{"queued", queued}}, queued ? 202 : 503);
 	}
 
+#if NAWFSTORE_WITH_WEB
+	SendResult wifi_config_get(Response &r)
+	{
+		return json(r, wifi_profiles());
+	}
+
+	SendResult wifi_config_post(Request &q, Response &r)
+	{
+		auto body = q.body();
+		if(body.size() > 2048) return json(r, Value::Object{{"error", "request_too_large"}}, 413);
+
+		Value command;
+		std::string error;
+		if(!application::parse_json(std::string(reinterpret_cast<const char *>(body.data()), body.size()), command,
+		    error))
+			return json(r, Value::Object{{"error", "invalid_json"}}, 400);
+
+		auto result = wifi_config_command(command);
+		const auto accepted = std::get_if<bool>(&application::member(result, "accepted").value);
+		return json(r, result, accepted && *accepted ? 202 : 422);
+	}
+
+	SendResult wifi_config_operation(Request &q, Response &r)
+	{
+		auto id = q.query("id");
+		return json(r, wifi_operation(id ? strtoul(std::string(*id).c_str(), nullptr, 10) : 0));
+	}
+
+	Route wifi_config_read("/api/wifi/config", HttpMethod::Get, wifi_config_get, private_http, authenticated_http);
+	Route wifi_config_write("/api/wifi/config", HttpMethod::Post, wifi_config_post, private_http, authenticated_http);
+	Route wifi_result("/api/wifi/operation", HttpMethod::Get, wifi_config_operation, private_http, authenticated_http);
+#endif
 	Route wifi_command("/api/wifi", HttpMethod::Post, wifi_post, private_http, authenticated_http);
 	HandlerBase *const routes[]{
 		&wifi_command,
+#if NAWFSTORE_WITH_WEB
+		&wifi_config_read, &wifi_config_write, &wifi_result, &setup_page,
+#endif
 		&home_page, &index_page, &index_alias, &ble_page,
 		&stylesheet, &state_route, &cbor_route, &event_route,
 		&research_route, &settings_get, &settings_post, &operation_route,

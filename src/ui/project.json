@@ -6284,6 +6284,104 @@
                 ]
               }
             ]
+          },
+          {
+            "id": "wifi-ap-open",
+            "type": "button",
+            "props": {
+              "text": "AP 5 min"
+            },
+            "style": {
+              "x": 448,
+              "y": 74,
+              "width": 160,
+              "height": 36,
+              "bg_opa": 255,
+              "border_width": 1,
+              "radius": 0,
+              "pad_all": 2,
+              "text_font": "montserrat_14"
+            },
+            "events": [
+              {
+                "event": "clicked",
+                "action": "wifi.ap.open",
+                "args": {
+                  "literal": 300
+                }
+              }
+            ],
+            "children": [],
+            "styles": [
+              {
+                "ref": "global-static:ui.button",
+                "part": "MAIN",
+                "state": []
+              },
+              {
+                "ref": "global-static:ui.button_pressed",
+                "part": "MAIN",
+                "state": [
+                  "PRESSED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.button_disabled",
+                "part": "MAIN",
+                "state": [
+                  "DISABLED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.button_pressed",
+                "part": "MAIN",
+                "state": [
+                  "CHECKED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.focus_outline",
+                "part": "MAIN",
+                "state": [
+                  "FOCUS_KEY"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "wifi-ap-info",
+            "type": "label",
+            "props": {
+              "text": "--",
+              "long_mode": 0
+            },
+            "style": {
+              "x": 390,
+              "y": 250,
+              "width": 402,
+              "height": 110,
+              "text_font": "montserrat_14"
+            },
+            "children": [],
+            "bindings": [
+              {
+                "method": "text",
+                "value": {
+                  "source": "wifi.ap",
+                  "path": []
+                },
+                "format": {
+                  "unknown": "--"
+                }
+              }
+            ],
+            "styles": [
+              {
+                "ref": "global-static:ui.text",
+                "part": "MAIN",
+                "state": []
+              }
+            ]
           }
         ],
         "styles": [
@@ -10010,6 +10108,104 @@
                 "state": [
                   "FOCUS_KEY"
                 ]
+              }
+            ]
+          },
+          {
+            "id": "wifi-ap-open",
+            "type": "button",
+            "props": {
+              "text": "AP 5 min"
+            },
+            "style": {
+              "x": 164,
+              "y": 106,
+              "width": 148,
+              "height": 24,
+              "bg_opa": 255,
+              "border_width": 1,
+              "radius": 0,
+              "pad_all": 2,
+              "text_font": "montserrat_14"
+            },
+            "events": [
+              {
+                "event": "clicked",
+                "action": "wifi.ap.open",
+                "args": {
+                  "literal": 300
+                }
+              }
+            ],
+            "children": [],
+            "styles": [
+              {
+                "ref": "global-static:ui.button",
+                "part": "MAIN",
+                "state": []
+              },
+              {
+                "ref": "global-static:ui.button_pressed",
+                "part": "MAIN",
+                "state": [
+                  "PRESSED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.button_disabled",
+                "part": "MAIN",
+                "state": [
+                  "DISABLED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.button_pressed",
+                "part": "MAIN",
+                "state": [
+                  "CHECKED"
+                ]
+              },
+              {
+                "ref": "global-static:ui.focus_outline",
+                "part": "MAIN",
+                "state": [
+                  "FOCUS_KEY"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "wifi-ap-info",
+            "type": "label",
+            "props": {
+              "text": "--",
+              "long_mode": 0
+            },
+            "style": {
+              "x": 8,
+              "y": 210,
+              "width": 304,
+              "height": 80,
+              "text_font": "montserrat_14"
+            },
+            "children": [],
+            "bindings": [
+              {
+                "method": "text",
+                "value": {
+                  "source": "wifi.ap",
+                  "path": []
+                },
+                "format": {
+                  "unknown": "--"
+                }
+              }
+            ],
+            "styles": [
+              {
+                "ref": "global-static:ui.text",
+                "part": "MAIN",
+                "state": []
               }
             ]
           }

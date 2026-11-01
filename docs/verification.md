@@ -43,3 +43,32 @@ BLE работает постоянно. На устройстве провер�
 LCD7 и headless собраны. Записана только область приложения после проверки MAC/таблицы; hash записи подтверждён. Проверены все четыре страницы и отсутствие ошибок биндингов. На TPMS за контрольное окно было 44 обновления и 471504 перерисованных пикселя вместо 16896000 при FULL: сокращение 97.209375%. BLE продолжал сканировать, счётчик рекламы вырос до 2336, dropped=0. После возврата больших буферов внутренняя свободная память около 53 КиБ, максимальный свободный блок около 31 КиБ. Гараж, приборы и радиополитика сохранены.
 
 Физическая панель снята USB-камерой до и после, включая финальные 20 секунд совместной работы LCD/BLE/Wi-Fi. Просмотрены кадры TPMS на 1/5/10/15/19 секундах: резких сдвигов макета на них нет. Автофокус/движение камеры не позволяют выдавать этот короткий ролик за доказательство отсутствия любого редкого аппаратного сбоя; длительная автомобильная проверка остаётся отдельной. Артефакты и фактические адреса только в игнорируемом local/radio-controls-2026-10-30.
+# NaWFstore integration — 2026-10-30
+
+Portable core, one-profile configuration, NVS corruption/commit/readback failures,
+and console tests: 4/4 PASS with the existing WSL GCC/CMake. CBOR/web generators,
+JavaScript syntax and `tools/check-wifi-ui.mjs`: PASS. ESP32-S3 LCD7 application
+build with ESP-IDF 5.5.6: PASS.
+
+Hardware verification completed on the identified S3 LCD7. Only the application
+at 0x10000 was flashed, at 115200 baud, and its written hash verified. Before
+first application boot, esptool verified the complete 4 MiB FS against the
+original backup: digest matched. No FS image, NVS image or partition table was
+written by the flasher. Normal application journaling continues after boot.
+
+An on-device test found UART VFS was translating CR before the portable parser;
+the application adapter now passes raw CR/LF and disables echo. With the final
+image, interactive CRLF input saved a temporary profile, changed its priority
+and disabled it. A hardware reset retained that profile and its values; the
+temporary profile was then removed and the original profile list restored.
+The password did not appear in serial responses. The saved working network
+reconnected after restart. Unauthenticated configuration requests return 401,
+and the public display registry omits local AP credentials.
+
+The native Settings CBOR button was dispatched through its actual LVGL event
+handler: AP changed from off to on with a 300-second lifetime. The authenticated
+setup page returned HTTP 200. The final RGB565 framebuffer was inspected; this
+verifies rendered memory and handlers, not physical touch-panel acceptance.
+CH343 still intermittently reports USB write timeouts, including after console
+AP start; the device continues running and answering over Wi-Fi. Evidence and
+the original FS backup remain in ignored `local/device-recovery`.

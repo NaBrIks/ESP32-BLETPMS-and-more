@@ -68,3 +68,23 @@ ESP-IDF/toolchain packages were reused as build prerequisites.
 
 Local build logs and artifacts remain outside version control. Hardware
 acceptance of a different board profile is separate from this compilation check.
+
+## Offline rebuild of provisioned dependencies
+
+When `managed_components` already contains the locked dependencies, an explicit
+offline rebuild can disable the registry manager and select the full component
+names used on disk. The application wires the GT911 manifest dependency in this
+mode; it does not download or replace component sources:
+
+```powershell
+$env:IDF_COMPONENT_MANAGER = '0'
+$env:NA_CBOR_LVGL_COMPONENT = 'lvgl__lvgl'
+$env:NA_CBOR_CBOR_COMPONENT = 'espressif__cbor'
+& "$env:USERPROFILE/.platformio/penv/Scripts/pio.exe" run -e s3-lcd7
+```
+
+PIO, SDK and toolchain installations belong in the standard shared PlatformIO
+directories, never inside a project. Configure local package references to reuse
+the installed versions when necessary; do not use an unrelated Python/ESPHome
+installation for package maintenance. NaWFstore is registered as an ESP-IDF
+component and excluded from PlatformIO's additional library dependency finder.
