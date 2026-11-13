@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
 // SPDX-License-Identifier: MIT
 import {readFile,writeFile} from 'node:fs/promises';
-import {encodeProject,decodeProject} from '../../NaCBORUIforLVGL/packages/project-codec/index.js';
+import {encodeProject,decodeProject} from '../managed_components/nacboruiforlvgl/packages/project-codec/index.js';
 import {compileNativeAppearance} from './native-appearance.mjs';
 const old=JSON.parse(await readFile(new URL('../src/ui/project.json',import.meta.url),'utf8'));
 const bg='#101e28',panel='#1b303d',line='#385563',fg='#e8f0f2',muted='#9eb4c1';

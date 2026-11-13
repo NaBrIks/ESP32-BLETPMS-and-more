@@ -9,24 +9,17 @@ assignments and board integration live here. There are no local library copies.
 
 ## Build
 
-Place the three library checkouts next to this repository as `../NaBTools`,
-`../NaCBORUIforLVGL` and `../NaWServer`. The current application requires
-NaBTools advertisement classification and the `EspIdfScanTiming` /
-`set_scan_timing` API; an older library HEAD is insufficient. Published repository
-URLs, pinned revisions and fresh-checkout commands are in
-[the repository build baseline](docs/dependencies.md).
-
-The build uses PlatformIO Espressif32 8.0.0, ESP-IDF 5.5.6 and pinned toolchains.
-`platformio.ini` expects the SDK in the PlatformIO package directory as
-`framework-espidf-v5.5.6`. Install the UI codec dependencies before generating
-the embedded project:
+PlatformIO uses ESP-IDF Component Manager to fetch the three libraries at
+pinned Git revisions. The first build uses the tracked web and CBOR assets.
+Install ESP-IDF 5.5.6 in the PlatformIO package directory as
+`framework-espidf-v5.5.6` before building.
 
 ```powershell
-npm --prefix ../NaCBORUIforLVGL ci
-node tools/encode-screen.mjs
-node tools/build-web.mjs
 pio run -e s3-lcd7
 ```
+
+See [build dependencies](docs/dependencies.md) for Git access, exact pins and
+asset regeneration.
 
 Profiles: `s3-lcd7` (800×480), `lilygo-t-display-s3` (320×170) and
 `s3-headless`. Verify the actual board, chip and installed partition table before

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
 // SPDX-License-Identifier: MIT
 #include "wifi.hpp"
+#include "modules/web/web.hpp"
 #include <NaWFstore/NaWFstore.hpp>
 #include <NaWFstore/NvsProfileStore.hpp>
 #include <NaWFstore/EspIdfWifiDriver.hpp>
@@ -12,12 +13,17 @@
 #include <freertos/task.h>
 #include <algorithm>
 #include <cstdio>
+#include <ctime>
 #include <cstring>
 #include <deque>
 #include <fcntl.h>
 #include <mutex>
 #include <unistd.h>
 #include <termios.h>
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#include <driver/usb_serial_jtag.h>
+#include <driver/usb_serial_jtag_vfs.h>
+#endif
 #if __has_include("wifi_secret.hpp") && NAWFSTORE_WITH_BOOTSTRAP
 #include "wifi_secret.hpp"
 #endif
@@ -76,6 +82,8 @@ namespace
 	void publish(bool journal_transitions = false)
 	{
 		const auto status = manager.status();
+		web_network_enabled(WebNetwork::WifiStation, status.enabled);
+		web_network_enabled(WebNetwork::WifiAp, status.driver.ap_active);
 		const auto &config = manager.config();
 		Value::Array profiles;
 		for(const auto &profile : config.profiles)
@@ -100,10 +108,14 @@ namespace
 				{"attempts", status.attempts}, {"disconnects", status.driver.disconnects},
 				{"starts", status.driver.starts},
 				{"stops", status.driver.stops}, {"lastReason", status.driver.last_reason}, {"rssi", status.driver.rssi},
-				{"apActive", status.driver.ap_active}, {"remainingSeconds", status.remaining_seconds}};
+				{"apActive", status.driver.ap_active}, {"remainingSeconds", status.remaining_seconds},
+				{"ip", status.driver.ip}, {"apIp", status.driver.ap_ip}};
 			auto emit = [&](const char *event) {
+					ESP_LOGI("APP_WIFI", "%s ip=%s connected=%u reason=%u", event, status.driver.ip.c_str(),
+					    unsigned(status.driver.connected), unsigned(status.driver.last_reason));
 					application::journal(lvgl_cbor::data_value_json(Value::Object{{"event", event},
-							{"timeMs", clock_source.milliseconds()}, {"wifi", diagnostic}, {"result", 0}}));
+							{"timeMs", clock_source.milliseconds()}, {"unixSeconds", int64_t(time(nullptr))},
+							{"wifi", diagnostic}, {"result", 0}}));
 				};
 			if(status.driver.starts != previous.driver.starts) emit("wifi-started");
 
@@ -112,6 +124,8 @@ namespace
 			if(status.driver.disconnects != previous.driver.disconnects) emit("wifi-disconnected");
 
 			if(status.driver.connected && !previous.driver.connected) emit("wifi-connected");
+
+			if(status.driver.ip != previous.driver.ip) emit("wifi-ip-changed");
 
 			if(!status.driver.connected && previous.driver.connected &&
 			    status.driver.disconnects == previous.driver.disconnects)
@@ -246,9 +260,23 @@ namespace
 	{
 		if(arguments.empty() || arguments[0] == "help")
 			return
-			    "wifi status | list | add | edit ID | remove ID | connect ID | on [seconds] | off | startup on/off [seconds] | ap start [seconds] | ap stop | result ID";
+			    "wifi status | web | list | add | edit ID | remove ID | connect ID | on [seconds] | off | startup on/off [seconds] | ap start [seconds] | ap stop | result ID";
 
 		const auto &op = arguments[0];
+		if(op == "web")
+		{
+			if(arguments.size() == 1) return lvgl_cbor::data_value_json(web_probe());
+
+			if(arguments.size() == 2 && arguments[1] == "status") return lvgl_cbor::data_value_json(web_status());
+
+			if(arguments.size() == 2 && (arguments[1] == "on" || arguments[1] == "off"))
+			{
+				web_request(arguments[1] == "on");
+				return "Web request queued (session only)";
+			}
+			return "wifi web [status|on|off]";
+		}
+
 		if(op == "status") return lvgl_cbor::data_value_json(wifi_status());
 
 		if(op == "list") return lvgl_cbor::data_value_json(wifi_profiles());
@@ -295,6 +323,13 @@ namespace
 
 	void console_worker(void *)
 	{
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+		// IDF 5.5.6 nonblocking VFS reads use the driver's RX ring buffer.
+		// Install it before polling stdin, rather than leaving USB in polled mode.
+		usb_serial_jtag_driver_config_t usb_config = USB_SERIAL_JTAG_DRIVER_CONFIG_DEFAULT();
+		ESP_ERROR_CHECK(usb_serial_jtag_driver_install(&usb_config));
+		usb_serial_jtag_vfs_use_driver();
+#endif
 		const int fd = fileno(stdin);
 		struct termios terminal {};
 		if(tcgetattr(fd, &terminal) == 0)
@@ -309,8 +344,10 @@ namespace
 		(void)fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 		NaWFstore::Console console(console_command, [](const std::string &text){
 		    std::fwrite(text.data(), 1, text.size(), stdout);
+			std::fflush(stdout);
 			});
 		std::printf("NaWFstore console: wifi help\n");
+		std::fflush(stdout);
 		for(;;)
 		{
 			char bytes[64];

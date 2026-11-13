@@ -1,9 +1,10 @@
 if(CMAKE_BUILD_EARLY_EXPANSION)
-    idf_component_register(PRIV_REQUIRES NaWFstore NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
+    idf_component_register(PRIV_REQUIRES NaWFstore nabtools nacboruiforlvgl nawserver esp_lcd esp_wifi
         esp_event esp_netif nvs_flash esp_timer driver spiffs json espressif__cbor espressif__esp_lcd_touch espressif__esp_lcd_touch_gt911)
     return()
 endif()
-set(appearance_dir "${CMAKE_CURRENT_LIST_DIR}/../../NaCBORUIforLVGL/examples/common/appearance")
+idf_component_get_property(ui_component_dir nacboruiforlvgl COMPONENT_DIR)
+set(appearance_dir "${ui_component_dir}/examples/common/appearance")
 set(display_sources modules/lcd/dashboard.cpp ui/fonts/app_text14.c ui/fonts/app_text20.c "${appearance_dir}/appearance.cpp")
 set(display_requirements)
 if(APP_BOARD STREQUAL "lcd7")
@@ -20,7 +21,7 @@ idf_component_register(
     SRCS main.cpp modules/composition_root.cpp modules/settings.cpp modules/tpms.cpp modules/ble/ble.cpp
          modules/wifi/wifi.cpp modules/web/web.cpp modules/diagnostic/diagnostic.cpp ${display_sources}
     INCLUDE_DIRS . "${appearance_dir}"
-    PRIV_REQUIRES NaWFstore NaBTools NaCBORUIforLVGL NaWServer esp_lcd esp_wifi
+    PRIV_REQUIRES NaWFstore nabtools nacboruiforlvgl nawserver esp_lcd esp_wifi
                   esp_event esp_netif nvs_flash esp_timer driver spiffs json espressif__cbor ${display_requirements}
     EMBED_TXTFILES www/index.html www/ble.html www/css.css
     EMBED_FILES ui/project.cbor ui/appearance.cbor)

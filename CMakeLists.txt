@@ -5,11 +5,11 @@ if(APP_BOARD STREQUAL "lcd7" OR APP_BOARD STREQUAL "lilygo")
 endif()
 set(EXTRA_COMPONENT_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/lib/NaWFstore"
-    "${CMAKE_CURRENT_LIST_DIR}/src"
-    "${CMAKE_CURRENT_LIST_DIR}/../NaBTools"
-    "${CMAKE_CURRENT_LIST_DIR}/../NaCBORUIforLVGL"
-    "${CMAKE_CURRENT_LIST_DIR}/../NaWServer")
+    "${CMAKE_CURRENT_LIST_DIR}/src")
 set(LVGL_CBOR_PROJECT_SERVICE ON CACHE BOOL "Load the application UI project from firmware" FORCE)
+# Use the manifest's registry component names in both CMake expansion phases.
+set(ENV{NA_CBOR_LVGL_COMPONENT} "lvgl__lvgl")
+set(ENV{NA_CBOR_CBOR_COMPONENT} "espressif__cbor")
 if("$ENV{IDF_COMPONENT_MANAGER}" STREQUAL "0")
     # Explicit offline builds reuse the already provisioned managed components.
     file(GLOB offline_component_files "${CMAKE_CURRENT_LIST_DIR}/managed_components/*/CMakeLists.txt")

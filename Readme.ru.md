@@ -6,21 +6,17 @@
 
 ## Сборка
 
-Соседние checkout: `../NaBTools`, `../NaCBORUIforLVGL`, `../NaWServer`. PlatformIO Espressif32 8.0.0, ESP-IDF 5.5.6, закреплённые toolchain-пакеты. Зависимости кодека устанавливаются в UI-библиотеке через `npm --prefix ../NaCBORUIforLVGL ci`.
-
-В `platformio.ini` SDK ожидается в каталоге пакетов PlatformIO под именем
-`framework-espidf-v5.5.6`.
-
-Требуется NaBTools с классификацией рекламы и API `EspIdfScanTiming` / `set_scan_timing`.
-Необходимые изменения библиотек опубликованы в NaBrIks. Точные коммиты, адреса
-репозиториев и команды получения с нуля — в [описании сборки из репозиториев](docs/dependencies.md).
-Старый HEAD библиотеки недостаточен; локальных копий этих изменений в приложении нет.
+PlatformIO получает три библиотеки через ESP-IDF Component Manager по
+закреплённым Git-коммитам. Первая сборка использует готовые веб- и CBOR-файлы
+из репозитория. SDK 5.5.6 нужно заранее установить в каталог пакетов
+PlatformIO под именем `framework-espidf-v5.5.6`.
 
 ```powershell
-node tools/encode-screen.mjs
-node tools/build-web.mjs
 pio run -e s3-lcd7
 ```
+
+Точные коммиты, настройка доступа к Git и команды генерации ресурсов приведены
+в [описании зависимостей](docs/dependencies.md).
 
 Профили: LCD7 800×480, `lilygo-t-display-s3` 320×170, `s3-headless` без дисплея. Физическая проверка одного профиля не подтверждает другую плату. Общая FS занимает последние 4 МиБ; перед прошивкой проверять реальный chip/MAC и текущую разметку. Не применять полное стирание или upload filesystem.
 

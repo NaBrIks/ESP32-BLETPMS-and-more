@@ -15,6 +15,13 @@
 #include <NaWServer/sse.h>
 #include <NaWServer/websocket.h>
 #include <array>
+#include <atomic>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <lwip/sockets.h>
+#include <lwip/inet.h>
+#include <fcntl.h>
+#include <cerrno>
 #include <cstring>
 #include <ctime>
 #include <esp_heap_caps.h>
@@ -90,17 +97,41 @@ namespace
 		result.port = 80;
 		result.websocket_tx_block_size = 16384;
 		result.websocket_tx_blocks = 4;
+		result.recovery.enabled = true;
+		result.recovery.retry_delay_ms = 1000;
 		return result;
 	}
 
 	TcpHttpBackend backend(transport, options());
 	sse::TcpAdapter event_backend(backend);
 	sse::EventSource events(event_backend);
+	bool http_started{}, startup_attempted{}, transport_started{}, publishing{};
+	std::atomic<uint32_t> network_mask{};
+	std::atomic<bool> web_enabled{true};
+	std::atomic<TaskHandle_t> web_owner{};
+	std::mutex publish_mutex, memory_mutex;
+	Value last_memory;
 	std::mutex snapshots_mutex, event_tokens_mutex;
 	std::string snapshot_json = "{\"msgType\":\"snapshot\",\"ready\":false}";
 	std::vector<uint8_t> snapshot_cbor;
 	Value research_snapshot, tomtom_snapshot, tpms_snapshot;
 	std::array<sse::Token, sse::client_capacity> event_tokens;
+
+	Value web_diagnostics()
+	{
+		const auto diagnostic = backend.diagnostics();
+		constexpr const char *states[] = {"stopped", "starting", "listening", "recovering", "stopping",
+			"cleanup-required", "failed"};
+		constexpr const char *failures[] = {"none", "listen", "wait", "listener", "accept",
+			"connection-cleanup", "listener-cleanup", "worker-start"};
+		const auto state = static_cast<size_t>(diagnostic.state);
+		const auto failure = static_cast<size_t>(diagnostic.last_failure);
+		return Value::Object{{"state", state < std::size(states) ? states[state] : "unknown"},
+			{"enabled", web_enabled.load()}, {"networks", network_mask.load()},
+			{"lastFailure", failure < std::size(failures) ? failures[failure] : "unknown"},
+			{"nativeError", diagnostic.native_error}, {"port", diagnostic.port},
+			{"errors", diagnostic.errors}, {"retries", diagnostic.retries}, {"recoveries", diagnostic.recoveries}};
+	}
 
 	SendResult get_snapshot(Response &response)
 	{
@@ -459,12 +490,54 @@ namespace
 
 } // namespace
 
-esp_err_t start_web_server()
+static bool stop_web_server()
 {
+	{
+		std::lock_guard lock(publish_mutex);
+		publishing = false;
+	}
+	http_started = false;
+	// No producers are in flight. Never hold their gate while joining callbacks.
+	if(!events.stop(1000) || server.end() != NaWServer::HttpError::Ok) return false;
+
+	if(transport_started && transport.stop().status != NaWServer::tcp::Status::Ok) return false;
+
+	transport_started = false;
+	http_started = false;
+	startup_attempted = false;
+	{
+		std::lock_guard lock(event_tokens_mutex);
+		event_tokens.fill({});
+	}
+	{
+		std::lock_guard lock(snapshots_mutex);
+		std::string().swap(snapshot_json);
+		std::vector<uint8_t>().swap(snapshot_cbor);
+		research_snapshot = {}; tomtom_snapshot = {}; tpms_snapshot = {};
+	}
+	return true;
+}
+
+static esp_err_t start_web_server()
+{
+	if(http_started) return ESP_OK;
+
+	if(startup_attempted && !stop_web_server())
+	{
+		ESP_LOGE("APP_WEB", "Startup retry waiting for resource cleanup");
+		return ESP_FAIL;
+	}
+
+	startup_attempted = true;
+	{
+		std::lock_guard lock(snapshots_mutex);
+		snapshot_json = "{\"msgType\":\"snapshot\",\"ready\":false}";
+	}
 	// The concrete transport has an explicit lifecycle after esp_netif init.
 	// HttpServer owns HTTP dispatch, not the application's socket platform.
 	if(transport.start().status != NaWServer::tcp::Status::Ok)
 		return ESP_FAIL;
+	transport_started = true;
 
 	websocket.onConnect([](NaWServer::WebSocketClient *client) {
 		std::string owned;
@@ -503,15 +576,183 @@ esp_err_t start_web_server()
 	    unsigned(memory.peak_bytes), unsigned(memory.budget_rejections),
 	    unsigned(memory.allocation_failures));
 	if(started == NaWServer::HttpError::Ok)
+	{
+		http_started = true;
+		std::lock_guard lock(publish_mutex);
+		publishing = true;
 		return ESP_OK;
+	}
 
 	(void)events.stop(1000);
 	return ESP_FAIL;
 }
 
+static void web_worker(void *)
+{
+	bool previous_wanted = false;
+	uint64_t next_attempt{};
+	for(;;)
+	{
+		const bool wanted = web_enabled.load() && network_mask.load() != 0;
+		const uint64_t now = esp_timer_get_time() / 1000;
+		if(wanted != previous_wanted) next_attempt = 0;
+		previous_wanted = wanted;
+		const bool transition = wanted ? !http_started : startup_attempted;
+		if(transition && now >= next_attempt)
+		{
+			const auto internal_before = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+			const auto psram_before = heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+			const auto buffers_before = backend.bufferMemoryStats();
+			const bool ok = wanted ? start_web_server() == ESP_OK : stop_web_server();
+			// Deleted task stacks are reclaimed by the idle tasks, not join itself.
+			vTaskDelay(pdMS_TO_TICKS(100));
+			const auto internal_after = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+			const auto psram_after = heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+			Value memory = Value::Object{{"event", wanted ? "web-start" : "web-stop"},
+				{"timeMs", now}, {"unixSeconds", int64_t(time(nullptr))}, {"ok", ok},
+				{"internalBefore", internal_before}, {"internalAfter", internal_after},
+				{"internalDelta", int64_t(internal_after) - int64_t(internal_before)},
+				{"psramBefore", psram_before}, {"psramAfter", psram_after},
+				{"psramDelta", int64_t(psram_after) - int64_t(psram_before)},
+				{"buffersBefore", buffers_before.used_bytes}, {"buffersAfter", backend.bufferMemoryStats().used_bytes},
+				{"budgetRejections", buffers_before.budget_rejections},
+				{"allocationFailures", buffers_before.allocation_failures}};
+			{
+				std::lock_guard lock(memory_mutex);
+				last_memory = memory;
+			}
+			const auto encoded = lvgl_cbor::data_value_json(memory);
+			ESP_LOGI("APP_WEB", "%s", encoded.c_str());
+			application::journal(encoded);
+			next_attempt = now + 5000;
+		}
+		const bool pending = previous_wanted ? !http_started : startup_attempted;
+		ulTaskNotifyTake(pdTRUE, pending ? pdMS_TO_TICKS(1000) : portMAX_DELAY);
+	}
+}
+
+esp_err_t web_init()
+{
+	TaskHandle_t task{};
+	if(xTaskCreate(web_worker, "app_web", 6144, nullptr, 2, &task) != pdPASS) return ESP_ERR_NO_MEM;
+
+	web_owner.store(task);
+	// Recheck intent changes that arrived before the owner handle was published.
+	xTaskNotifyGive(task);
+	return ESP_OK;
+}
+
+void web_network_enabled(WebNetwork network, bool enabled)
+{
+	const auto bit = static_cast<uint32_t>(network);
+	const auto previous = enabled ? network_mask.fetch_or(bit) : network_mask.fetch_and(~bit);
+	if(bool(previous & bit) != enabled)
+		if(const auto task = web_owner.load()) xTaskNotifyGive(task);
+}
+
+void web_request(bool enabled)
+{
+	web_enabled.store(enabled);
+	if(const auto task = web_owner.load()) xTaskNotifyGive(task);
+}
+
+application::Value web_status()
+{
+	Value memory;
+	{
+		std::lock_guard lock(memory_mutex);
+		memory = last_memory;
+	}
+	return Value::Object{{"server", web_diagnostics()}, {"memory", memory},
+		{"internalFree", heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT)},
+		{"internalLargest", heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT)},
+		{"ownerStackHighWater", web_owner.load() ? uxTaskGetStackHighWaterMark(web_owner.load()) : 0},
+		{"psramFree", heap_caps_get_free_size(MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT)}};
+}
+
+// Bounded console-only loopback check, independent of AP isolation and PC routes.
+application::Value web_probe()
+{
+	using Value = application::Value;
+	const int fd = lwip_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(fd < 0) return Value::Object{{"http", false}, {"phase", "socket"}, {"nativeError", errno}};
+
+	struct SocketOwner
+	{
+		int fd;
+		~SocketOwner() { lwip_close(fd); }
+	} owner{fd};
+	Value::Object result{{"http", false}, {"phase", "connect"}, {"server", web_diagnostics()}};
+	if(lwip_fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		result["nativeError"] = errno;
+		return result;
+	}
+
+	sockaddr_in endpoint{};
+	endpoint.sin_family = AF_INET;
+	endpoint.sin_port = htons(80);
+	endpoint.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+	const int connected = lwip_connect(fd, reinterpret_cast<sockaddr *>(&endpoint), sizeof(endpoint));
+	if(connected < 0 && errno != EINPROGRESS)
+	{
+		result["nativeError"] = errno;
+		return result;
+	}
+
+	fd_set writable;
+	FD_ZERO(&writable);
+	FD_SET(fd, &writable);
+	timeval deadline{1, 0};
+	const int selected = lwip_select(fd + 1, nullptr, &writable, nullptr, &deadline);
+	int error{};
+	socklen_t size = sizeof(error);
+	if(selected <= 0 || lwip_getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &size) < 0 || error)
+	{
+		result["nativeError"] = selected == 0 ? ETIMEDOUT : error ? error : errno;
+		return result;
+	}
+
+	result["phase"] = "response";
+	constexpr char request[] = "GET / HTTP/1.0\r\nHost: localhost\r\n\r\n";
+	if(lwip_send(fd, request, sizeof(request) - 1, 0) != sizeof(request) - 1)
+	{
+		result["nativeError"] = errno;
+		return result;
+	}
+
+	fd_set readable;
+	FD_ZERO(&readable);
+	FD_SET(fd, &readable);
+	deadline = {1, 0};
+	const int ready = lwip_select(fd + 1, &readable, nullptr, nullptr, &deadline);
+	char response[96]{};
+	const int received = ready > 0 ? lwip_recv(fd, response, sizeof(response) - 1, 0) : -1;
+	result["http"] = received >= 12 && std::strncmp(response, "HTTP/1.", 7) == 0;
+	result["nativeError"] = ready == 0 ? ETIMEDOUT : received < 0 ? errno : 0;
+	if(received > 0) result["response"] = std::string(response).substr(0, std::string(response).find("\r\n"));
+
+	return result;
+}
+
 void publish_web(const application::State &state)
 {
 	using Value = lvgl_cbor::DataValue;
+	const uint64_t now = esp_timer_get_time() / 1000;
+
+	const auto web = web_diagnostics();
+	static std::string previous_web;
+	const auto encoded_web = lvgl_cbor::data_value_json(web);
+	if(encoded_web != previous_web)
+	{
+		ESP_LOGI("APP_WEB", "%s", encoded_web.c_str());
+		application::journal(lvgl_cbor::data_value_json(Value::Object{{"event", "web-state"},
+			{"timeMs", now}, {"unixSeconds", int64_t(time(nullptr))}, {"web", web}}));
+		previous_web = encoded_web;
+	}
+	std::lock_guard publication(publish_mutex);
+	if(!publishing) return;
+
 	Value::Array sensors;
 	for(const auto &sensor : application::active_wheels(state))
 		sensors.push_back(application::tpms_message(sensor));
@@ -528,6 +769,7 @@ void publish_web(const application::State &state)
 		{"settingsRevision", state.settings.revision},
 		{"storage", application::storage_status()},
 		{"wifi", state.wifi},
+		{"web", web},
 		{"ble", state.ble},
 		{"bleScanTiming", state.ble},
 		{"scanMode", state.scan_mode},

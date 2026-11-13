@@ -33,7 +33,7 @@ void init_main()
 	esp_sntp_config_t clock_config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
 	(void)esp_netif_sntp_init(&clock_config);
 	application::start_bluetooth(state);
-	ESP_ERROR_CHECK(start_web_server());
+	ESP_ERROR_CHECK(web_init());
 	uint64_t next_web = 0, next_main = 0, next_ui = 0;
 	for(;;)
 	{

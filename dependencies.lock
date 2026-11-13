@@ -68,12 +68,40 @@ dependencies:
       registry_url: https://components.espressif.com/
       type: service
     version: 9.6.0
+  nabtools:
+    component_hash: 9d0f5a0b8783dcad21d545141466bde24c3e6e55ed29088862637f4d913c0073
+    dependencies: []
+    source:
+      git: https://github.com/NaBrIks/NaBTools.git
+      path: .
+      type: git
+    version: a9a821b6408309fa260b78524ffd79db9456aa35
+  nacboruiforlvgl:
+    component_hash: 1473c37b0bc436aed1c4f1ee4783e0cab5e15d9acb2575e6b24208067e8bf940
+    dependencies: []
+    source:
+      git: https://github.com/NaBrIks/NaCBORUIforLVGL.git
+      path: .
+      type: git
+    version: 533c2df4f6caf4b7ee0165cf55901c9b6770afd3
+  nawserver:
+    component_hash: 6d0ffa0d8617f78581d1142844934887553eda83e865c97be320ad886e8964f9
+    dependencies:
+    - name: idf
+      version: '>=5.4,<7.0'
+    source:
+      git: https://github.com/NaBrIks/NaWServer.git
+      path: .
+      type: git
+    version: 318732c3aca99d8af36f0b9373d126a9e339ef8e
 direct_dependencies:
 - espressif/cbor
 - espressif/esp_lcd_touch
 - espressif/esp_lcd_touch_gt911
-- idf
 - lvgl/lvgl
-manifest_hash: f47280ec00afdbd00ccddd564770db7ee3b95273866a94f75cc42f6c6b34e3f7
+- nabtools
+- nacboruiforlvgl
+- nawserver
+manifest_hash: b3ee441f07a0dcb144837465b1bf879d6e12ceb988700b50c7e572013ee2919f
 target: esp32s3
 version: 2.0.0

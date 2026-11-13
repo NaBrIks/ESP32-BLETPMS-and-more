@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
 // SPDX-License-Identifier: MIT
 import {readFile} from 'node:fs/promises';
-import {createProject,encodeProject} from '../../NaCBORUIforLVGL/packages/project-codec/index.js';
-import {roleStyles} from '../../NaCBORUIforLVGL/examples/windows_player/schemes.mjs';
+import {createProject,encodeProject} from '../managed_components/nacboruiforlvgl/packages/project-codec/index.js';
+import {roleStyles} from '../managed_components/nacboruiforlvgl/examples/common/appearance/schemes.mjs';
 
 // Product policy on top of the shared Appearance roles; the public demo is unchanged.
 export async function compileNativeAppearance() {
-  const catalog=JSON.parse(await readFile(new URL('../../NaCBORUIforLVGL/examples/windows_player/schemes.json',import.meta.url),'utf8'));
+  const catalog=JSON.parse(await readFile(new URL('../managed_components/nacboruiforlvgl/examples/common/appearance/schemes.json',import.meta.url),'utf8'));
   catalog.schemes.night={name:'Ночная',canvas:'#000000',surface:'#000000',surfaceAlt:'#000000',
     border:'#480000',text:'#aa0000',muted:'#700000',bar:'#000000',barText:'#900000',
     primary:'#b00000',hover:'#b00000'};

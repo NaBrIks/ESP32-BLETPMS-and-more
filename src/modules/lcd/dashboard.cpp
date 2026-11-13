@@ -170,13 +170,19 @@ namespace
 void dashboard_init()
 {
 	std::string e;
-	try{
-		appearance = std::make_unique<Appearance>();
-		auto styles = appearance->resources(); resources.insert(resources.end(), styles.begin(), styles.end());
-		appearance->load({appearance_start, size_t(appearance_end - appearance_start), {}}, "cream", resources.data(),
-		    resources.size());
-		appearance->install_popup_theme(lv_display_get_default(), &app_text14, 2);
-	}catch(const std::exception &error){ESP_LOGE("APP_UI", "Appearance: %s", error.what()); appearance.reset(); return;}
+	appearance = std::make_unique<Appearance>();
+	const auto resource_count = resources.size();
+	const auto styles = appearance->resources();
+	resources.insert(resources.end(), styles.begin(), styles.end());
+	if(!appearance->load({appearance_start, size_t(appearance_end - appearance_start), {}},
+	    "cream", resources.data(), resources.size(), e))
+	{
+		ESP_LOGE("APP_UI", "Appearance: %s", e.c_str());
+		resources.resize(resource_count);
+		appearance.reset();
+		return;
+	}
+	appearance->install_popup_theme(lv_display_get_default(), &app_text14, 2);
 	data.add_source({"ui.scheme", DataSchema::object({{"id", DataSchema::text(12)}, {"title", DataSchema::text(64)}})},
 	    e);
 	data.add_action({"ui.select_scheme", DataSchema::text(12), [](const DataValue &v, std::string &){
@@ -313,7 +319,9 @@ void dashboard_update(const application::State &state)
 	std::string e;
 	if(appearance)
 	{
-		appearance->select(state.settings.native_theme);
+		if(appearance->selected() != state.settings.native_theme)
+			(void)appearance->select(state.settings.native_theme, e);
+
 		for(const auto &choice:appearance->choices())
 			if(choice.id == appearance->selected())
 				data.publish("ui.scheme", DataValue::Object{{"id", choice.id}, {"title", choice.title}}, e);

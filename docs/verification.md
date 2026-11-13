@@ -72,3 +72,59 @@ verifies rendered memory and handlers, not physical touch-panel acceptance.
 CH343 still intermittently reports USB write timeouts, including after console
 AP start; the device continues running and answering over Wi-Fi. Evidence and
 the original FS backup remain in ignored `local/device-recovery`.
+
+## 2026-11-02: TCP recovery and Wi-Fi cycling
+
+Built `s3-lcd7` with portable NaWServer listener recovery and diagnostic snapshots.
+The library's coordinated test run passed Windows 54/54 and Linux 57/57,
+including injected listener failures, same-port recovery, HTTP after recovery,
+concurrent diagnostic sampling and retained cleanup ownership. These are host
+tests; RP Pico 2 W has not been validated by this deployment.
+
+The identified S3 received only the application at `0x10000` (2,692,768 bytes).
+The vendor's write verification passed; bootloader, partition table, NVS and the
+project FS were not flashed. Existing settings were identical through the HTTP
+API before and after the final deployment. Original Wi-Fi profiles were retained
+and a local profile was added explicitly; all nine existing FS entries remain.
+Private flash backups and evidence are in ignored `local/trip-2026-11-02`.
+
+On the final firmware, three Wi-Fi off/on cycles passed eight bounded loopback
+HTTP probes. Each disabled phase showed the radio stopped, and each enabled phase
+reconnected. The listener remained healthy with zero errors: this exercise did
+not trigger socket recovery. Host fault-injection tests cover recovery separately.
+After cycling, authenticated LAN requests to the main page, settings, state, files
+and Wi-Fi configuration all returned HTTP 200. The device remains connected.
+Earlier LAN unreachability disappeared when the board joined the same Wi-Fi SSID
+as the computer; it was not evidence of a failed HTTP listener.
+
+## 2026-11-02: network intent and web memory release
+
+The application now owns an asynchronous, notification-driven web lifecycle task.
+S3 app-only deployment wrote 2,697,168 bytes at `0x10000` with vendor hash verification.
+All nine FS files were downloaded before deployment. Both TPMS config slots and
+all five UI/catalog files were byte-identical afterwards; Wi-Fi profile configuration
+and the application settings API also matched. Logs remain backed up in ignored
+`local/trip-2026-11-02/web-power-before`; normal bounded journaling continues.
+
+Twelve final hardware states/probes passed: initial running, three manual off/on
+cycles, all networks off, station on, AP only, AP and station off, and station restored.
+Off probes found the listener stopped; on probes received actual loopback HTTP.
+Final LAN settings/state requests returned HTTP 200 and the station was connected.
+The existing manager's `wifi off` disables AP as well: AP-only verification starts
+the AP after that command. Ethernet has an application intent bit but no physical
+Ethernet adapter was tested here.
+
+With Wi-Fi left on, three final manual stops released 13,608 internal-heap bytes
+each. PSRAM deltas were 297,880 / 65,936 / 180,396 bytes; these whole-heap samples
+include concurrent BLE/storage activity and variable web snapshots. Exact tracked
+TCP buffer usage changed from 78,780 to zero bytes on every stop. These bytes are
+part of the heaps, not an additional saving to sum with their deltas. The lifecycle
+owner retains its 6 KiB stack and sleeps while stable; its minimum observed stack
+high-water value was 2,852. Restart completed without allocation failures.
+
+NaWServer independently passed 12 coupled REST/WS/SSE stop/start cycles on each
+of Windows and Linux, with zero retained SSE/TCP buffer allocations and owned
+sockets after stop. An earlier S3 run stopped an open SSE client successfully.
+Additional WS/SSE connections in the final hardware run were unavailable and are
+not claimed as passing coupled-client coverage; basic HTTP/lifecycle probes passed.
+Private results: `web-power-results.json`, `web-power-verification.json`, and serial logs.

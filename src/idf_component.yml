@@ -3,3 +3,12 @@ dependencies:
   lvgl/lvgl: "9.6.0"
   espressif/esp_lcd_touch: "1.2.1"
   espressif/esp_lcd_touch_gt911: "1.1.3"
+  nabtools:
+    git: https://github.com/NaBrIks/NaBTools.git
+    version: "a9a821b6408309fa260b78524ffd79db9456aa35"
+  nacboruiforlvgl:
+    git: https://github.com/NaBrIks/NaCBORUIforLVGL.git
+    version: "533c2df4f6caf4b7ee0165cf55901c9b6770afd3"
+  nawserver:
+    git: https://github.com/NaBrIks/NaWServer.git
+    version: "318732c3aca99d8af36f0b9373d126a9e339ef8e"

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Oleg Kozhevnikov
 // SPDX-License-Identifier: MIT
 import assert from 'node:assert/strict';
-import {decode} from '../../NaCBORUIforLVGL/node_modules/cborg/cborg.js';
+import {decode} from '../managed_components/nacboruiforlvgl/node_modules/cborg/cborg.js';
 
 if(!process.argv[2]) throw Error('Usage: node tools/check-device.mjs http://device:80');
 const base = new URL(process.argv[2]);
